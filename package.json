@@ -1,0 +1,15 @@
+{
+  "name": "bizim-market",
+  "version": "1.0.0",
+  "description": "Bizim Market Paneli – Market Alışveriş & Fiş Takip Sistemi (München)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["market", "grocery", "receipts", "munich", "dashboard"],
+  "author": "Abdullah Caliskan",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

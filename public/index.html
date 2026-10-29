@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💑 Bizim Market Paneli – Market Alışveriş Takip & Analiz</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ApexCharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- QRCode.js CDN for Mobile Sharing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- SheetJS CDN for Excel XLSX Export/Import -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            },
+            penny: '#cf0820',
+            hit: '#e30613',
+            edeka: '#005ca9',
+            aldi: '#002069',
+            dm: '#7b2b82',
+            wolt: '#00c2e8'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="text-lg font-bold tracking-tight text-slate-900">Bizim Market Paneli</h1>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">München 🥨</span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">Birlikte Ortak Harcama & Fiş Takip Sistemi</p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <!-- Share With Girlfriend Button -->
+          <button onclick="openShareModal()" class="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 rounded-lg transition-all shadow-xs" title="Sevgilim de telefondan açsın (QR & Link)">
+            <i data-lucide="smartphone" class="w-4 h-4 text-rose-600"></i>
+            <span class="hidden sm:inline">Sevgilimle Paylaş (QR)</span>
+          </button>
+
+          <!-- Excel Export -->
+          <button onclick="exportToExcel()" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+            <span>Excel İndir</span>
+          </button>
+
+          <!-- Budget Settings Button -->
+          <button onclick="openBudgetModal()" class="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all" title="Aylık Bütçe Hedefi">
+            <i data-lucide="piggy-bank" class="w-4 h-4 text-amber-500"></i>
+            <span class="hidden md:inline">Bütçe Hedefi</span>
+          </button>
+
+          <!-- Quick Add Item -->
+          <button onclick="openQuickItemModal()" class="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all">
+            <i data-lucide="plus" class="w-4 h-4 text-slate-600"></i>
+            <span class="hidden md:inline">Hızlı Ürün</span>
+          </button>
+
+          <!-- Upload Receipt Primary Button -->
+          <button onclick="openReceiptUploadModal()" class="inline-flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-lg shadow-sm shadow-emerald-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Fiş Yükle</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- CO-CONTROL & BUDGET BANNER -->
+    <div class="glass-card rounded-2xl p-5 border border-slate-200/80 shadow-sm relative overflow-hidden bg-gradient-to-r from-emerald-50/50 via-white to-teal-50/30">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <!-- Left: Couple Welcome & Mode -->
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-rose-400 to-pink-500 flex items-center justify-center text-white text-xl shadow-md">
+              💑
+            </div>
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-base font-bold text-slate-900">Ortak Alışveriş Yönetimi</h2>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-semibold">2 Kişilik Takip</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Tüm market fişleri dijitalleştirildi, ortak bütçe anlık hesaplanıyor.</p>
+          </div>
+        </div>
+
+        <!-- Right: Monthly Budget Tracker -->
+        <div class="flex-1 max-w-md bg-white rounded-xl p-3.5 border border-slate-200 shadow-xs">
+          <div class="flex justify-between items-center text-xs mb-1.5">
+            <span class="font-medium text-slate-600 flex items-center space-x-1">
+              <i data-lucide="target" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Bu Ayki Bütçe:</span>
+              <strong id="displayBudgetGoal" class="text-slate-900 font-bold">€450.00</strong>
+            </span>
+            <span id="displayBudgetPercent" class="font-bold text-emerald-700">%0</span>
+          </div>
+          <!-- Progress Bar -->
+          <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+            <div id="budgetProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-slate-500 mt-1.5">
+            <span>Harcandı: <strong id="displayCurrentMonthSpend" class="text-slate-800">€0.00</strong></span>
+            <span id="displayRemainingBudget">Kalan: <strong class="text-emerald-600">€0.00</strong></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs space-y-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        
+        <!-- Search -->
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+          <input type="text" id="searchInput" placeholder="Ürün veya marka ara..." oninput="applyFilters()" 
+                 class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+        </div>
+
+        <!-- Date Filter -->
+        <div>
+          <select id="dateFilter" onchange="applyFilters()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700">
+            <option value="all">Tüm Zamanlar (Eylül - Ekim 2026)</option>
+            <option value="current_month" selected>Bu Ay (Ekim 2026)</option>
+            <option value="prev_month">Geçen Ay (Eylül 2026)</option>
+            <option value="last_7_days">Son 7 Gün</option>
+          </select>
+        </div>
+
+        <!-- Supermarket Filter -->
+        <div>
+          <select id="marketFilter" onchange="applyFilters()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700">
+            <option value="all">Tüm Marketler (Hepsi)</option>
+            <option value="PENNY">PENNY</option>
+            <option value="HIT">HIT</option>
+            <option value="EDEKA">EDEKA</option>
+            <option value="ALDI SÜD">ALDI SÜD</option>
+            <option value="dm">dm Drogerie</option>
+            <option value="tegut...">tegut...</option>
+            <option value="Wolt Market">Wolt Market</option>
+          </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+          <select id="categoryFilter" onchange="applyFilters()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700">
+            <option value="all">Tüm Kategoriler</option>
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <!-- Payer Filter (Kim Ödedi?) -->
+        <div>
+          <select id="payerFilter" onchange="applyFilters()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700">
+            <option value="all">Ödeyen: Hepsi</option>
+            <option value="Ortak">Ortak (50/50)</option>
+            <option value="Ben">Ben</option>
+            <option value="Kız Arkadaşım">Kız Arkadaşım</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Quick Market Pills -->
+      <div class="flex items-center space-x-2 overflow-x-auto pt-1 pb-0.5 custom-scroll text-xs">
+        <span class="text-slate-400 text-[11px] font-medium uppercase tracking-wider mr-1">Hızlı Filtre:</span>
+        <button onclick="setMarketPill('all')" id="pill-all" class="market-pill px-2.5 py-1 rounded-full font-medium bg-slate-900 text-white transition-all">Tümü</button>
+        <button onclick="setMarketPill('PENNY')" id="pill-PENNY" class="market-pill px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-all">PENNY</button>
+        <button onclick="setMarketPill('HIT')" id="pill-HIT" class="market-pill px-2.5 py-1 rounded-full font-medium bg-rose-100 text-rose-700 hover:bg-rose-200 transition-all">HIT</button>
+        <button onclick="setMarketPill('EDEKA')" id="pill-EDEKA" class="market-pill px-2.5 py-1 rounded-full font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all">EDEKA</button>
+        <button onclick="setMarketPill('ALDI SÜD')" id="pill-ALDI SÜD" class="market-pill px-2.5 py-1 rounded-full font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-all">ALDI SÜD</button>
+        <button onclick="setMarketPill('dm')" id="pill-dm" class="market-pill px-2.5 py-1 rounded-full font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all">dm</button>
+        <button onclick="setMarketPill('tegut...')" id="pill-tegut..." class="market-pill px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all">tegut...</button>
+        <button onclick="setMarketPill('Wolt Market')" id="pill-Wolt Market" class="market-pill px-2.5 py-1 rounded-full font-medium bg-cyan-100 text-cyan-700 hover:bg-cyan-200 transition-all">Wolt</button>
+      </div>
+    </div>
+
+    <!-- KPI STATS CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      
+      <!-- Total Spend -->
+      <div class="glass-card rounded-xl p-4 border border-slate-200 shadow-xs relative">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-medium">Toplam Harcama</span>
+          <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i data-lucide="euro" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-xl font-bold text-slate-900" id="kpiTotalSpend">€0.00</div>
+        <div class="text-[11px] text-slate-400 mt-1" id="kpiItemCount">0 kalem ürün</div>
+      </div>
+
+      <!-- Monthly Spend -->
+      <div class="glass-card rounded-xl p-4 border border-slate-200 shadow-xs relative">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-medium">Ekim Harcaması</span>
+          <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-xl font-bold text-slate-900" id="kpiMonthSpend">€0.00</div>
+        <div class="text-[11px] text-emerald-600 font-medium mt-1" id="kpiMonthComp">Eylül: €0.00</div>
+      </div>
+
+      <!-- Receipt Count -->
+      <div class="glass-card rounded-xl p-4 border border-slate-200 shadow-xs relative">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-medium">Toplam Fiş</span>
+          <div class="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-xl font-bold text-slate-900" id="kpiReceiptCount">0</div>
+        <div class="text-[11px] text-slate-400 mt-1">Alışveriş fişi</div>
+      </div>
+
+      <!-- Average Basket -->
+      <div class="glass-card rounded-xl p-4 border border-slate-200 shadow-xs relative">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-medium">Ortalama Sepet</span>
+          <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-xl font-bold text-slate-900" id="kpiAvgBasket">€0.00</div>
+        <div class="text-[11px] text-slate-400 mt-1">Fiş başına ortalama</div>
+      </div>
+
+      <!-- Top Supermarket -->
+      <div class="glass-card rounded-xl p-4 border border-slate-200 shadow-xs relative">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-medium">Lider Market</span>
+          <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i data-lucide="store" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-lg font-bold text-slate-900 truncate" id="kpiTopMarket">-</div>
+        <div class="text-[11px] text-slate-400 mt-1" id="kpiTopMarketSpend">€0.00 (%0)</div>
+      </div>
+
+      <!-- Pfand (Deposit) Balance -->
+      <div class="glass-card rounded-xl p-4 border border-slate-200 shadow-xs relative">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-medium">Pfand (Depozito)</span>
+          <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+            <i data-lucide="recycle" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-lg font-bold text-slate-900" id="kpiPfandNet">€0.00</div>
+        <div class="text-[11px] text-slate-400 mt-1" id="kpiPfandDetail">İade: €0 | Ödenen: €0</div>
+      </div>
+
+    </div>
+
+    <!-- CHARTS SECTION (2 COLS) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Chart 1: Spending Over Time Trend -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+              <span>Zaman İçinde Alışveriş Trendi</span>
+            </h3>
+            <p class="text-xs text-slate-500">Günlük ve fiş bazlı harcama dağılımı</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-medium">EUR (€)</span>
+        </div>
+        <div id="timelineChart" class="w-full h-72"></div>
+      </div>
+
+      <!-- Chart 2: Market Distribution -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i>
+              <span>Market Dağılımı ve Harcama Payları</span>
+            </h3>
+            <p class="text-xs text-slate-500">Hangi markete ne kadar ödendi?</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-medium">Market %</span>
+        </div>
+        <div id="marketChart" class="w-full h-72"></div>
+      </div>
+
+      <!-- Chart 3: Category Breakdown -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-purple-600"></i>
+              <span>Kategori Bazlı Harcama Dağılımı</span>
+            </h3>
+            <p class="text-xs text-slate-500">En çok nereye para gitti? (Et, Sebze, Temizlik...)</p>
+          </div>
+        </div>
+        <div id="categoryChart" class="w-full h-72"></div>
+      </div>
+
+      <!-- Chart 4: VAT Groups (%7 vs %19) & Weekly Pattern -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+              <i data-lucide="percent" class="w-4 h-4 text-amber-600"></i>
+              <span>Almanya KDV Dağılımı (%7 Gıda vs %19 Diğer)</span>
+            </h3>
+            <p class="text-xs text-slate-500">Fişlerdeki vergi türleri kırılımı</p>
+          </div>
+        </div>
+        <div id="vatChart" class="w-full h-72"></div>
+      </div>
+
+    </div>
+
+    <!-- SMART PRICE & INFLATION COMPARATOR -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400 text-slate-950">FİYAT RADARI</span>
+            <h3 class="text-base font-bold tracking-tight">Akıllı Market Fiyat Karşılaştırıcısı & Enflasyon</h3>
+          </div>
+          <p class="text-xs text-slate-300 mt-1">Sık aldığınız ürünlerin marketler arası fiyat farkını ve zamanla değişimini kıyaslayın.</p>
+        </div>
+
+        <!-- Product Selector Dropdown -->
+        <div class="flex items-center space-x-2">
+          <label class="text-xs text-slate-300 font-medium">Ürün Seç:</label>
+          <select id="comparatorSelect" onchange="renderPriceComparator()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400">
+            <option value="Dana Kıyma">🥩 Dana Kıyma (RD-Hackfleisch)</option>
+            <option value="Kafes Yumurta">🥚 Yumurta 10'lu</option>
+            <option value="Yulaf Sütü">🥛 Yulaf Sütü (Haferdrink Barista)</option>
+            <option value="Muz">🍌 Muz (Bananen)</option>
+            <option value="Tereyağı">🧈 Tereyağı (Kerrygold)</option>
+            <option value="Patates Cipsi">🥔 Patates Cipsi (Lay's & Penny)</option>
+            <option value="Ayran">🥛 Ayran</option>
+            <option value="Makarna">🍝 Makarna (Delverde & Bernbacher)</option>
+            <option value="Peynir">🧀 Peynir (Mitakos / Gouda / Emmental)</option>
+            <option value="Nutella">🍫 Nutella / Fındık Kreması</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Comparator Results Cards & Comparison Table -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="comparatorCards">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Comparator Timeline Mini Chart -->
+      <div class="mt-5 bg-slate-900/60 rounded-xl p-4 border border-slate-800/80">
+        <h4 class="text-xs font-semibold text-slate-300 mb-2">Zaman İçinde Fiyat Geçmişi</h4>
+        <div id="comparatorChart" class="w-full h-52"></div>
+      </div>
+    </div>
+
+    <!-- RECEIPT PHOTOS GALLERY -->
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+            <i data-lucide="image" class="w-4 h-4 text-emerald-600"></i>
+            <span>Yüklenen Fiş Fotoğrafları Galerisi</span>
+          </h3>
+          <p class="text-xs text-slate-500">Münih market alışverişlerinin orijinal kasa fişleri (tıklayıp inceleyebilirsiniz)</p>
+        </div>
+        <button onclick="openReceiptUploadModal()" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center space-x-1">
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+          <span>Yeni Fiş Fotoğrafı Ekle</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4" id="receiptGalleryContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- DETAILED ITEMS & RECEIPTS TABLE -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      
+      <!-- Table Header & Controls -->
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+            <i data-lucide="list" class="w-4 h-4 text-emerald-600"></i>
+            <span>Tüm Alışveriş Kalemleri & Fiş Detayları</span>
+          </h3>
+          <p class="text-xs text-slate-500" id="tableFilterSummary">Filtrelenen: 0 ürün</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Excel Export -->
+          <button onclick="exportToExcel()" class="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all flex items-center space-x-1">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Excel / CSV</span>
+          </button>
+          <!-- Import -->
+          <button onclick="openImportModal()" class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all flex items-center space-x-1">
+            <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+            <span>İçe Aktar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="overflow-x-auto custom-scroll max-h-[600px]">
+        <table class="w-full text-left text-xs text-slate-700">
+          <thead class="bg-slate-50 text-slate-600 font-semibold sticky top-0 z-10 border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4">Tarih</th>
+              <th class="py-3 px-3">Market</th>
+              <th class="py-3 px-3">Ürün Adı</th>
+              <th class="py-3 px-3">Marka</th>
+              <th class="py-3 px-3">Kategori</th>
+              <th class="py-3 px-3 text-right">Miktar</th>
+              <th class="py-3 px-3 text-right">Birim (€)</th>
+              <th class="py-3 px-3 text-right">Toplam (€)</th>
+              <th class="py-3 px-3 text-center">KDV</th>
+              <th class="py-3 px-3 text-center">Fiş No</th>
+              <th class="py-3 px-3 text-center">Ödeyen</th>
+              <th class="py-3 px-4 text-center">İşlem</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTableBody" class="divide-y divide-slate-100">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer / Pagination -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+        <span id="paginationInfo">Toplam 0 kayıttan 0-0 arası</span>
+        <div class="flex items-center space-x-1" id="paginationButtons">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto py-6 border-t border-slate-200 bg-white text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>💑 <strong>Bizim Market Paneli</strong> – Birlikte daha bilinçli ve keyifli harcama.</p>
+      <p class="text-slate-400">Veriler anlık olarak yerel veritabanında saklanır ve telefonunuzla senkronize çalışır.</p>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: BATCH RECEIPT UPLOAD WITH PHOTO & LINE ITEMS   -->
+  <!-- ======================================================== -->
+  <div id="receiptModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-white">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+            <i data-lucide="receipt" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Yeni Fiş Yükle / Giriş Yap</h3>
+            <p class="text-xs text-slate-500">Fiş fotoğrafını yükleyin veya ürün kalemlerini hızlıca ekleyin</p>
+          </div>
+        </div>
+        <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto custom-scroll space-y-5 flex-1">
+        
+        <!-- DUPLICATE RECEIPT WARNING BANNER (Shows when already uploaded) -->
+        <div id="duplicateWarningBox" class="hidden p-4 bg-amber-50 border-2 border-amber-400 rounded-xl text-amber-950 shadow-sm animate-pulse">
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-200 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <div class="text-xs flex-1">
+              <div class="font-extrabold text-amber-950 text-sm flex items-center space-x-1.5">
+                <span>⚠️ BU FİŞİ DAHA ÖNCE ZATEN YÜKLEDİNİZ!</span>
+              </div>
+              <p id="duplicateWarningText" class="mt-1 text-amber-900 leading-relaxed font-medium">
+                Bu fiş numarası ve tarihiyle sistemde kayıtlı bir alışveriş bulundu.
+              </p>
+              <div class="mt-3 pt-2.5 border-t border-amber-200/80 flex flex-wrap items-center justify-between gap-2">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="forceDuplicateCheck" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4">
+                  <span class="font-bold text-amber-900">Yine de mükerrer olarak kaydetmek istiyorum</span>
+                </label>
+                <button type="button" onclick="previewExistingReceipt()" class="px-2.5 py-1 bg-amber-200/80 hover:bg-amber-300 rounded font-semibold text-amber-900 transition-colors">
+                  Mevcut Fişi İncele
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Section: Receipt Photo Upload & Meta Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Photo Dropzone with Direct Camera Capture -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-slate-700">📸 Fiş Fotoğrafı</label>
+              <div class="flex items-center space-x-1.5">
+                <!-- Native Phone Camera Trigger -->
+                <button type="button" onclick="document.getElementById('cameraInput').click()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1">
+                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                  <span>Fotoğraf Çek</span>
+                </button>
+                <!-- Live In-App Camera Trigger -->
+                <button type="button" onclick="openLiveCameraModal()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-[11px] font-medium transition-all hidden sm:inline-flex items-center space-x-1" title="Webcam / Canlı Kamera">
+                  <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                  <span>Canlı Kamera</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Hidden Inputs for File and Camera Capture -->
+            <input type="file" id="receiptFileInput" accept="image/*" class="hidden" onchange="handleReceiptImageSelected(event)">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptImageSelected(event)">
+
+            <div id="dropzoneBox" onclick="document.getElementById('receiptFileInput').click()" 
+                 class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-4 text-center cursor-pointer transition-all bg-slate-50 hover:bg-emerald-50/30 flex flex-col items-center justify-center min-h-[160px] relative group">
+              
+              <div id="dropzonePrompt">
+                <div class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-emerald-600 flex items-center justify-center mx-auto mb-2 transition-colors">
+                  <i data-lucide="camera" class="w-5 h-5"></i>
+                </div>
+                <p class="text-xs font-semibold text-slate-800">Fotoğraf Çekin veya Dosya Seçin</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Telefonda doğrudan arka kamerayı açar</p>
+                <div class="mt-2.5 flex items-center justify-center space-x-2">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Kamera</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-bold">Galeri</span>
+                </div>
+              </div>
+
+              <img id="receiptImagePreview" class="hidden max-h-40 rounded-lg shadow-sm border border-slate-200 object-contain mx-auto">
+            </div>
+
+            <div id="receiptImageRemoveBtn" class="hidden mt-1.5 flex justify-between items-center text-xs">
+              <span class="text-emerald-600 font-medium text-[11px] flex items-center space-x-1">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                <span>Fotoğraf hazır!</span>
+              </span>
+              <button type="button" onclick="clearReceiptImage()" class="text-xs text-rose-600 hover:underline font-semibold">Fotoğrafı Değiştir / Kaldır</button>
+            </div>
+          </div>
+
+          <!-- Receipt Metadata (Date, Store, Receipt No, Payer) -->
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tarih</label>
+              <input type="date" id="newReceiptDate" onchange="onReceiptMetaChanged()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Market</label>
+              <select id="newReceiptMarket" onchange="onReceiptMetaChanged()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                <option value="PENNY">PENNY</option>
+                <option value="HIT">HIT</option>
+                <option value="EDEKA">EDEKA</option>
+                <option value="ALDI SÜD">ALDI SÜD</option>
+                <option value="dm">dm Drogerie</option>
+                <option value="tegut...">tegut...</option>
+                <option value="Wolt Market">Wolt Market</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Fiş No (Beleg)</label>
+                <input type="text" id="newReceiptNo" oninput="onReceiptMetaChanged()" placeholder="Örn: 5573" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Kim Ödedi?</label>
+                <select id="newReceiptPayer" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                  <option value="Ortak">Ortak (50/50)</option>
+                  <option value="Ben">Ben</option>
+                  <option value="Kız Arkadaşım">Kız Arkadaşım</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Line Items Section -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Fişteki Ürünler</h4>
+            <div class="flex items-center space-x-2">
+              <button onclick="addReceiptLine()" class="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-md font-semibold transition-all flex items-center space-x-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Satır Ekle</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-2 px-3">Ürün Adı</th>
+                  <th class="py-2 px-2">Kategori</th>
+                  <th class="py-2 px-2 w-16 text-right">Miktar</th>
+                  <th class="py-2 px-2 w-20 text-right">Birim (€)</th>
+                  <th class="py-2 px-2 w-20 text-right">Toplam (€)</th>
+                  <th class="py-2 px-2 w-20 text-center">KDV</th>
+                  <th class="py-2 px-2 w-10 text-center"></th>
+                </tr>
+              </thead>
+              <tbody id="receiptLinesBody" class="divide-y divide-slate-100 bg-white">
+                <!-- Lines injected by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Total Calculation in Modal -->
+          <div class="flex justify-between items-center mt-3 p-3 bg-emerald-50/70 rounded-xl border border-emerald-100 text-xs">
+            <span class="text-emerald-900 font-medium">Toplam Kalem: <strong id="modalLineCount">0</strong></span>
+            <span class="text-emerald-900 font-bold text-sm">Fiş Toplamı: <span id="modalTotalSum">€0.00</span></span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end space-x-3">
+        <button onclick="closeReceiptModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-lg">İptal</button>
+        <button onclick="submitNewReceipt()" class="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm shadow-emerald-600/30 transition-all flex items-center space-x-1.5">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Fişi Sisteme Kaydet</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: QUICK SINGLE ITEM ADD / EDIT                   -->
+  <!-- ======================================================== -->
+  <div id="itemModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-900" id="itemModalTitle">Yeni Ürün Ekle</h3>
+        <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="itemForm" onsubmit="submitItemForm(event)" class="p-5 space-y-3 text-xs">
+        <input type="hidden" id="editItemId">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Tarih</label>
+          <input type="date" id="itemTarih" required class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Market</label>
+            <select id="itemMarket" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+              <option value="PENNY">PENNY</option>
+              <option value="HIT">HIT</option>
+              <option value="EDEKA">EDEKA</option>
+              <option value="ALDI SÜD">ALDI SÜD</option>
+              <option value="dm">dm</option>
+              <option value="tegut...">tegut...</option>
+              <option value="Wolt Market">Wolt Market</option>
+              <option value="Diğer">Diğer</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kategori</label>
+            <select id="itemKategori" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Ürün Adı</label>
+          <input type="text" id="itemUrun" required oninput="onSingleItemUrunInput(this)" placeholder="Örn: Tavuk Kıyma, Dana Kıyma" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Marka</label>
+            <input type="text" id="itemMarka" placeholder="Örn: Penny" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Fiş No</label>
+            <input type="text" id="itemFisNo" placeholder="Örn: 5573" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Miktar</label>
+            <input type="number" step="0.001" id="itemMiktar" value="1" oninput="calcItemTotal()" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Birim (€)</label>
+            <input type="number" step="0.01" id="itemBirimFiyat" value="0.00" oninput="calcItemTotal()" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Toplam (€)</label>
+            <input type="number" step="0.01" id="itemToplamFiyat" value="0.00" class="w-full px-3 py-2 border border-slate-200 rounded-lg font-bold text-emerald-700">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">KDV Grubu</label>
+            <select id="itemKdv" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+              <option value="B (7%)">B (%7 İndirimli Gıda)</option>
+              <option value="A (19%)">A (%19 Standart KDV)</option>
+              <option value="C (7%)">C (%7)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kim Ödedi?</label>
+            <select id="itemOdeyen" class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+              <option value="Ortak">Ortak (50/50)</option>
+              <option value="Ben">Ben</option>
+              <option value="Kız Arkadaşım">Kız Arkadaşım</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" onclick="closeItemModal()" class="px-3 py-1.5 text-slate-600 hover:text-slate-800">İptal</button>
+          <button type="submit" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: MONTHLY BUDGET GOAL SETTINGS                   -->
+  <!-- ======================================================== -->
+  <div id="budgetModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 overflow-hidden p-5">
+      <div class="flex items-center space-x-2 text-slate-900 mb-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+          <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+        </div>
+        <h3 class="text-sm font-bold">Aylık Ortak Bütçe Hedefi</h3>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">Her ay market alışverişi için ayırmak istediğiniz bütçe tutarını belirleyin.</p>
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Hedef Bütçe Tutarı (€)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-2.5 text-slate-400 font-bold">€</span>
+          <input type="number" id="budgetGoalInput" value="450" min="50" step="10" class="w-full pl-8 pr-3 py-2 text-sm font-bold border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeBudgetModal()" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800">Vazgeç</button>
+        <button onclick="saveBudgetGoal()" class="px-4 py-1.5 text-xs bg-emerald-600 text-white font-semibold rounded-lg shadow-sm">Bütçeyi Güncelle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: RECEIPT IMAGE LIGHTBOX VIEWER                   -->
+  <!-- ======================================================== -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4" onclick="closeLightbox(event)">
+    <div class="relative max-w-2xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200" onclick="event.stopPropagation()">
+      <div class="p-3 bg-slate-900 text-white flex items-center justify-between text-xs">
+        <span id="lightboxTitle" class="font-bold flex items-center space-x-1.5">
+          <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
+          <span>Fiş Detayı</span>
+        </span>
+        <button onclick="closeLightbox(null)" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 bg-slate-100 flex items-center justify-center max-h-[70vh] overflow-auto">
+        <img id="lightboxImage" src="" class="max-h-[65vh] object-contain rounded-lg shadow-md border border-slate-300">
+      </div>
+      <div class="p-3 bg-white border-t border-slate-200 flex justify-between items-center text-xs text-slate-600">
+        <span id="lightboxMeta">Market: PENNY | Tarih: -</span>
+        <a id="lightboxDownloadBtn" href="#" target="_blank" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-md font-medium text-slate-700">Tam Boy Aç</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 5: IMPORT DATA (EXCEL / CSV / TEXT)                -->
+  <!-- ======================================================== -->
+  <div id="importModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden p-5">
+      <div class="flex items-center space-x-2 text-slate-900 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+          <i data-lucide="file-up" class="w-4 h-4"></i>
+        </div>
+        <h3 class="text-sm font-bold">Excel / CSV Verisi İçe Aktar</h3>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">Excel (.xlsx), CSV veya sekmeli tablonuzu doğrudan yükleyebilirsiniz.</p>
+      
+      <div class="mb-4">
+        <input type="file" id="importFileInput" accept=".csv, .xlsx, .xls" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+      </div>
+
+      <div class="flex items-center space-x-2 mb-4">
+        <input type="checkbox" id="importReplaceCheck" class="rounded text-emerald-600 focus:ring-emerald-500">
+        <label for="importReplaceCheck" class="text-xs text-slate-700">Mevcut verilerin üzerine yaz (Hepsini yenile)</label>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeImportModal()" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800">İptal</button>
+        <button onclick="executeImport()" class="px-4 py-1.5 text-xs bg-emerald-600 text-white font-semibold rounded-lg shadow-sm">Yükle ve Aktar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 6: SHARE WITH GIRLFRIEND (MOBILE QR & LINK)        -->
+  <!-- ======================================================== -->
+  <div id="shareModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4" onclick="closeShareModal(event)">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden p-6 text-center" onclick="event.stopPropagation()">
+      
+      <!-- Close button -->
+      <div class="flex justify-end -mt-2 -mr-2 mb-2">
+        <button onclick="closeShareModal(null)" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-pink-500/30 mb-3">
+        📱
+      </div>
+
+      <h3 class="text-base font-bold text-slate-900">Sevgilinle Birlikte Kullan!</h3>
+      <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+        Kız arkadaşın telefonunun kamerasını aşağıdaki QR koda tutarak paneli anında açabilir.
+      </p>
+
+      <!-- QR Code Display Box -->
+      <div class="my-5 p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block shadow-inner">
+        <div id="qrcodeContainer" class="flex items-center justify-center"></div>
+      </div>
+
+      <!-- Direct Share Link Box with Copy Button -->
+      <div class="bg-slate-100 rounded-xl p-2.5 flex items-center justify-between space-x-2 text-left mb-4 border border-slate-200">
+        <div class="overflow-hidden">
+          <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ağ Bağlantı Adresi:</div>
+          <div id="shareNetworkUrl" class="text-xs font-mono font-bold text-slate-800 truncate">http://192.168.0.173:3030</div>
+        </div>
+        <button onclick="copyShareLink()" id="copyShareBtn" class="px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs transition-all flex items-center space-x-1 shrink-0">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Kopyala</span>
+        </button>
+      </div>
+
+      <div class="p-3 bg-pink-50/80 rounded-xl border border-pink-100 text-[11px] text-pink-900 text-left">
+        💡 <strong>İpucu:</strong> İkinizin de aynı ev Wi-Fi ağına bağlı olması yeterlidir. Herhangi bir şifre veya program kurması gerekmez!
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 7: LIVE WEBCAM / CAMERA VIEWFINDER MODAL           -->
+  <!-- ======================================================== -->
+  <div id="cameraModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 text-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-800 flex flex-col">
+      
+      <!-- Camera Header -->
+      <div class="p-3.5 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="camera" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-xs font-bold text-white">Fiş Fotoğrafı Çek</h3>
+            <p class="text-[10px] text-slate-400">Fişi net bir şekilde kadraja hizalayın</p>
+          </div>
+        </div>
+        <button onclick="closeLiveCameraModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Viewfinder Video Area -->
+      <div class="relative bg-black flex items-center justify-center min-h-[300px] overflow-hidden">
+        <video id="cameraVideo" autoplay playsinline class="w-full max-h-[60vh] object-contain"></video>
+        <canvas id="cameraCanvas" class="hidden"></canvas>
+        
+        <!-- Viewfinder Alignment Overlay Guide -->
+        <div class="absolute inset-6 border-2 border-dashed border-emerald-400/50 rounded-xl pointer-events-none flex items-center justify-center">
+          <span class="text-[11px] font-bold text-emerald-400/70 bg-black/50 px-2.5 py-1 rounded-md backdrop-blur-xs">
+            Fişi bu alana ortalayın
+          </span>
+        </div>
+      </div>
+
+      <!-- Camera Shutter Controls -->
+      <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-around">
+        <button type="button" onclick="closeLiveCameraModal()" class="px-4 py-2 text-xs text-slate-400 hover:text-white font-medium">
+          Vazgeç
+        </button>
+        <!-- Shutter Button -->
+        <button type="button" onclick="captureLivePhoto()" class="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 border-4 border-slate-900 shadow-lg shadow-emerald-500/40 flex items-center justify-center transition-all">
+          <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+        </button>
+        <button type="button" onclick="toggleCameraFacing()" class="px-3 py-2 text-xs text-slate-400 hover:text-white font-medium flex items-center space-x-1">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Kamera Değiştir</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT & DATA -->
+  <script src="/normalizer.js"></script>
+  <script src="/data.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
