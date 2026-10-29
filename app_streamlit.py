@@ -686,7 +686,7 @@ with tab_stores:
 
     st.subheader("📊 Market & Kategori Çapraz Harcama Tablosu")
     pivot_df = filtered_df.pivot_table(index="market", columns="kategori", values="toplam_fiyat", aggfunc="sum", fill_value=0)
-    st.dataframe(pivot_df.style.format("€{:.2f}").background_gradient(cmap="Blues", axis=None), use_container_width=True)
+    st.dataframe(pivot_df.style.format("€{:.2f}"), use_container_width=True)
 
 # --------------------------------------------------------
 # TAB 3: AKILLI FİYAT RADARI
