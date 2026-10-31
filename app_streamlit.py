@@ -1097,11 +1097,11 @@ with tab_planner:
         "Hazır Uyumlu Menü Şablonu:",
         [
             "🎨 Kendi Menümü Kendim Oluşturacağım (Serbest Seçim)",
-            "🍲 1. Geleneksel Tencere Menüsü: Mercimek Çorbası + Kuru Fasülye & Pilav + Çoban Salata",
-            "🍗 2. Restoran Usulü Özel Menü: Kaşarlı Domates Çorbası + Mantar Soslu Tavuk & Püre + Akdeniz Salatası",
-            "🍝 3. İtalyan Akşamı Menüsü: Tarhana Çorbası + Fırında Lazanya + Havuç Tarator",
-            "🥗 4. Hafif & Diyet Menüsü: Yayla Çorbası + Zeytinyağlı Kabak Yemeği + Salatalıklı Cacık",
-            "🍜 5. Pratik & Hızlı Menü: Tavuk Suyu Şehriye Çorbası + Sebzeli Noodle + Gavurdağı Salatası"
+            "🍲 1. Geleneksel Tencere Menüsü: Mercimek Çorbası (2G) + Kuru Fasülye & Pilav (3G) + Çoban Salata (1G)",
+            "🍗 2. Restoran Usulü Özel Menü: Kaşarlı Domates Çorbası (2G) + Mantar Soslu Tavuk & Püre (2G) + Akdeniz Salatası (1G)",
+            "🍝 3. İtalyan Akşamı Menüsü: Tarhana Çorbası (2G) + Fırında Lazanya (2G) + Havuç Tarator (1G)",
+            "🥗 4. Hafif & Diyet Menüsü: Yayla Çorbası (2G) + Zeytinyağlı Kabak Yemeği (3G) + Salatalıklı Cacık (1G)",
+            "🍜 5. Pratik & Hızlı Menü: Tavuk Suyu Şehriye Çorbası (2G) + Sebzeli Noodle (2G) + Gavurdağı Salatası (1G)"
         ],
         index=0
     )
@@ -1137,7 +1137,7 @@ with tab_planner:
         def_sides = ["Salatalıklı Cacık (Naneli)"]
 
     st.markdown("---")
-    st.markdown("#### 🍱 2. Günün / Haftanın Menü Bileşenleri:")
+    st.markdown("#### 🍱 2. Günün & Haftanın Menü Bileşenleri:")
 
     c_soup, c_main, c_side = st.columns(3)
 
@@ -1150,7 +1150,8 @@ with tab_planner:
             key="ms_soups"
         )
         for s in selected_soups:
-            st.caption(f"🥣 **{s}** (2 Günlük Tencere)")
+            s_days = COURSE_DATABASE["soups"][s].get("days", 2)
+            st.caption(f"🥣 **{s}** -> `{s_days} Günlük` tencere")
 
     with c_main:
         st.markdown("##### 🍲 2. Ana Yemek Seçimi:")
@@ -1161,8 +1162,9 @@ with tab_planner:
             key="ms_mains"
         )
         for m in selected_mains:
+            m_days = COURSE_DATABASE["mains"][m].get("days", 2)
             m_type = COURSE_DATABASE["mains"][m].get("type", "2 Günlük")
-            st.caption(f"🍲 **{m}** ({m_type})")
+            st.caption(f"🍲 **{m}** -> `{m_days} Gün Gider` ({m_type})")
 
     with c_side:
         st.markdown("##### 🥗 3. Salata & Meze Seçimi:")
@@ -1173,7 +1175,8 @@ with tab_planner:
             key="ms_sides"
         )
         for d in selected_sides:
-            st.caption(f"🥗 **{d}** (Taze Günlük Eşlikçi)")
+            d_days = COURSE_DATABASE["sides"][d].get("days", 1)
+            st.caption(f"🥗 **{d}** -> `{d_days} Günlük` taze meze")
 
     all_selected_dishes = []
     dish_meta_map = {}
@@ -1192,13 +1195,27 @@ with tab_planner:
 
     st.markdown("---")
 
-    # 3. CONSOLIDATED SHOPPING LIST WITH PANTRY DETECTION
+    # 3. DAYS CALCULATION & MONTHLY BUDGET PROJECTION
     if all_selected_dishes:
-        # Group ingredients & calculate quantities
+        # Calculate days per course
+        soup_days = sum([COURSE_DATABASE["soups"][s].get("days", 2) for s in selected_soups])
+        main_days = sum([COURSE_DATABASE["mains"][m].get("days", 2) for m in selected_mains])
+        side_days = sum([COURSE_DATABASE["sides"][d].get("days", 1) for d in selected_sides])
+        effective_days = max(main_days, 1)
+
+        # Collect raw ingredients & costs
         ing_dict = {}
+        course_cost_breakdown = {}
 
         for dish_name in all_selected_dishes:
             d_data = dish_meta_map[dish_name]
+            d_cost = sum([ing["cost"] for ing in d_data["ingredients"]])
+            course_cost_breakdown[dish_name] = {
+                "name": dish_name,
+                "category": d_data.get("category", "Yemek"),
+                "days": d_data.get("days", 2),
+                "cost": d_cost
+            }
             for ing in d_data["ingredients"]:
                 i_name = ing["name"]
                 if i_name not in ing_dict:
@@ -1215,11 +1232,38 @@ with tab_planner:
                     ing_dict[i_name]["cost"] += ing["cost"]
                     ing_dict[i_name]["dishes"].append(dish_name)
 
-        # Active vs Pantry Split
-        st.markdown("### 🛒 3. Menü Alışveriş Listesi & 'Evde Olabilir' Kontrolü")
+        gross_total = sum([info["cost"] for info in ing_dict.values()])
+
+        st.markdown("### ⏳ 3. Parça Parça Gün Hesabı & 30 Günlük Aylık Bütçe Planı")
+        st.caption("Seçtiğiniz yemeklerin kaçar gün gideceği ve buna göre 30 günlük aylık mutfak bütçesi simülasyonu:")
+
+        # Day Breakdown Cards
+        dc1, dc2, dc3, dc4 = st.columns(4)
+        dc1.metric("🍲 Ana Yemek Süresi", f"{main_days} Gün", f"{len(selected_mains)} Çeşit Ana Yemek")
+        dc2.metric("🥣 Çorba Süresi", f"{soup_days} Gün", f"{len(selected_soups)} Çeşit Çorba")
+        dc3.metric("🥗 Salata & Meze", f"{side_days} Gün", f"{len(selected_sides)} Çeşit Salata")
+        dc4.metric("📅 Toplam Kapsanan Gün", f"{effective_days} Gün", "30 Günlük Aylık Plandan")
+
+        # Item by Item Days Table
+        breakdown_rows = []
+        for d_name, d_info in course_cost_breakdown.items():
+            portions = d_info["days"] * 2
+            breakdown_rows.append({
+                "Öğün / Yemek": d_name,
+                "Kategori": d_info["category"],
+                "Kaç Gün Gider?": f"{d_info['days']} Gün",
+                "Toplam Porsiyon (2 Kişi)": f"{portions} Porsiyon",
+                "Tahmini Maliyet": f"€{d_info['cost']:.2f}",
+                "Günlük Maliyeti": f"€{(d_info['cost']/d_info['days']):.2f} / gün"
+            })
+        st.dataframe(pd.DataFrame(breakdown_rows), use_container_width=True)
+
+        st.markdown("---")
+
+        # 4. SHOPPING LIST WITH PANTRY DETECTION & REAL-TIME SAVINGS
+        st.markdown("### 🛒 4. Menü Alışveriş Listesi & 'Evde Olabilir' Kontrolü")
         st.caption("Çorba, ana yemek ve salatanın ortak malzemeleri toplanmış ve geçmiş Münih fişlerinize göre evde olma ihtimali olanlar listelenmiştir:")
 
-        gross_total = 0.0
         pantry_savings = 0.0
         active_items = []
         pantry_items = []
@@ -1228,7 +1272,6 @@ with tab_planner:
         st.markdown("<div style='background: rgba(128,128,128,0.12); padding: 8px 14px; border-radius: 8px; font-weight: 700; display: flex; justify-content: space-between;'><span>Malzeme & Kullanılacağı Yemekler</span><span>Önerilen Market & Tutar</span></div>", unsafe_allow_html=True)
 
         for i_idx, (i_name, info) in enumerate(ing_dict.items()):
-            gross_total += info["cost"]
             pantry_info = get_pantry_status(i_name, df)
 
             col_i1, col_i2 = st.columns([3, 2])
@@ -1255,21 +1298,30 @@ with tab_planner:
             st.markdown("<hr style='margin: 4px 0; border: none; border-top: 1px solid rgba(128,128,128,0.15);'/>", unsafe_allow_html=True)
 
         net_total = max(0.0, gross_total - pantry_savings)
+        daily_couple_cost = (net_total / effective_days) if effective_days > 0 else 0
+        monthly_simulated_spend = daily_couple_cost * 30
+        budget_usage_pct = (monthly_simulated_spend / budget_goal * 100) if budget_goal > 0 else 0
+        remaining_monthly_free = budget_goal - monthly_simulated_spend
 
-        # Budget & Savings Metrics
+        # Budget & Monthly Simulation Metrics
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Seçilen Menü Çeşidi", f"{len(all_selected_dishes)} Çeşit", f"{len(selected_soups)} Çorba + {len(selected_mains)} Ana + {len(selected_sides)} Salata")
-        m2.metric("Brüt Malzeme Maliyeti", f"€{gross_total:,.2f}", "Tüm Malzemeler")
-        m3.metric("🏠 Evdekilerden Tasarruf", f"€{pantry_savings:,.2f}", f"{len(pantry_items)} Ürün Evde Var!", delta_color="normal")
-        m4.metric("💰 ÖDENECEK NET TUTAR", f"€{net_total:,.2f}", "Sepet Tutarı", delta_color="inverse")
+        m1.metric("💰 Bu Menü Net Tutarı", f"€{net_total:,.2f}", f"Evden €{pantry_savings:,.2f} Tasarruf!", delta_color="normal")
+        m2.metric("📅 Günlük Yemek Maliyeti", f"€{daily_couple_cost:,.2f} / gün", "2 Kişi Akşam Yemeği")
+        m3.metric("🎯 30 Günlük Aylık Projeksiyon", f"€{monthly_simulated_spend:,.2f}", f"Bütçenin %{budget_usage_pct:.0f}'i", delta_color="normal" if monthly_simulated_spend <= budget_goal else "inverse")
+        m4.metric("👛 Kalan Serbest Bütçe", f"€{remaining_monthly_free:,.2f}", f"Hedef: €{budget_goal:.0f}", delta_color="normal")
+
+        # Monthly Budget Progress Bar
+        st.markdown(f"**🎯 30 Günlük Aylık Bütçe Uyumu:** Bu menü temposunda giderseniz aylık yemek masrafınız **€{monthly_simulated_spend:,.2f}** olur (Aylık hedefiniz olan **€{budget_goal:,.2f}** içinde son derece rahat kalırsınız).")
+        st.progress(min(1.0, max(0.0, budget_usage_pct / 100.0)))
 
         # WhatsApp Ready Format
-        wa_text = "*💑 BİZİM GÜNÜN / HAFTANIN MENÜSÜ & MARKET LİSTESİ*\n\n"
-        wa_text += f"*🥣 Çorba:* {', '.join(selected_soups) if selected_soups else 'Seçilmedi'}\n"
-        wa_text += f"*🍲 Ana Yemek:* {', '.join(selected_mains) if selected_mains else 'Seçilmedi'}\n"
-        wa_text += f"*🥗 Salata & Meze:* {', '.join(selected_sides) if selected_sides else 'Seçilmedi'}\n\n"
-        wa_text += f"*💰 Ödenecek Net Tutar:* €{net_total:,.2f} *(Evdeki malzemelerle €{pantry_savings:,.2f} tasarruf edildi)*\n\n"
+        wa_text = f"*💑 BİZİM GÜNÜN & HAFTANIN MENÜSÜ ({effective_days} GÜNLÜK)*\n\n"
+        wa_text += f"*🍲 Ana Yemek ({main_days} Gün):* {', '.join(selected_mains) if selected_mains else 'Seçilmedi'}\n"
+        wa_text += f"*🥣 Çorba ({soup_days} Gün):* {', '.join(selected_soups) if selected_soups else 'Seçilmedi'}\n"
+        wa_text += f"*🥗 Salata & Meze ({side_days} Gün):* {', '.join(selected_sides) if selected_sides else 'Seçilmedi'}\n\n"
+        wa_text += f"*💰 Bu Dönem Net Tutar:* €{net_total:,.2f} *(Günlük sadece €{daily_couple_cost:.2f} / 2 kişi)*\n"
+        wa_text += f"*🎯 30 Günlük Tahmini Aylık Mutfak:* €{monthly_simulated_spend:.2f} *(Hedef bütçe €{budget_goal:.0f})*\n\n"
         
         wa_text += "*🛒 SATIN ALINACAK EKSİKLER:*\n"
         for it in active_items:
@@ -1280,13 +1332,16 @@ with tab_planner:
             for p_it in pantry_items:
                 wa_text += f"- [x] {p_it}\n"
         
-        wa_text += "\n📍 Not: Markete tok karnına gidilsin, ekstra abur cubur alınmasın! 😊"
+        wa_text += f"\n📍 Not: Bu menü bizi {effective_days} gün rahat götürür! Tok karnına alışverişe gidelim 😊"
 
         with st.expander("📲 Sevgiline WhatsApp'tan Göndermek İçin Menü & Listeyi Kopyala", expanded=True):
             st.code(wa_text, language="text")
 
     else:
         st.warning("Lütfen yukarıdan en az bir çorba, ana yemek veya salata seçin.")
+
+# --------------------------------------------------------
+# TAB 5: ORİJİNAL FİŞ GALERİSİ
 
 # --------------------------------------------------------
 # TAB 5: ORİJİNAL FİŞ GALERİSİ
