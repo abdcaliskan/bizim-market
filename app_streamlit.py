@@ -776,260 +776,285 @@ with tab_radar:
         st.info("Bu ürün için henüz kayıt bulunamadı.")
 
 # --------------------------------------------------------
-# TAB 4: HAFTALIK MENÜ, SÜRÜKLE-BIRAK TAKVİM & BÜTÇE PLANI
+# TAB 4: GÜNÜN & HAFTANIN MENÜSÜ (ÇORBA + ANA YEMEK + SALATA)
 # --------------------------------------------------------
 with tab_planner:
-    st.subheader("🍽️ Akıllı Menü, Sürükle-Bırak Takvim & Bütçe Koruyucu Alışveriş")
-    st.caption("Birlikte yapacağınız yemekleri haftalık takvime yerleştirin; sistem kilerdeki malzemeleri tespit edip ortak eksikleri en ucuz fiyata çıkarsın.")
+    st.subheader("🍽️ Günün & Haftanın Menüsü: Çorba + Ana Yemek + Salata")
+    st.caption("Sevgilinizle akşam ne pişireceğinizi belirleyin; sistem çorba, ana yemek ve salatanın malzemelerini birleştirip kilerdeki eksikleri çıkarsın.")
 
-    # 1. Interactive Drag-and-Drop Weekly Calendar Component
-    st.markdown("### 📅 1. Haftalık Sürükle-Bırak Yemek Takvimi")
-    st.caption("Aşağıdaki yemek kartlarını günlerin üzerine sürükleyip bırakabilir veya bir yemeğe tıklayıp ardından güne tıklayabilirsiniz. (Mobilde dokunarak çalışır!)")
+    # 1. EXPANDED RECIPES DATABASE CATEGORIZED BY COURSE
+    COURSE_DATABASE = {
+        # 🥣 ÇORBALAR
+        "soups": {
+            "Kırmızı Mercimek Çorbası": {
+                "days": 2, "category": "Çorba",
+                "ingredients": [
+                    {"name": "Kırmızı Mercimek (300g)", "qty": 0.6, "unit": "paket", "market": "PENNY", "cost": 0.85},
+                    {"name": "Kuru Soğan", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40},
+                    {"name": "Havuç (1 adet)", "qty": 0.15, "unit": "kg", "market": "PENNY", "cost": 0.25},
+                    {"name": "Patates (1 adet)", "qty": 0.15, "unit": "kg", "market": "PENNY", "cost": 0.20},
+                    {"name": "Tereyağı & Nane", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Tarhana Çorbası": {
+                "days": 2, "category": "Çorba",
+                "ingredients": [
+                    {"name": "Tarhana (Kiler/Evden)", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.00},
+                    {"name": "Tereyağı & Salça", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+                ]
+            },
+            "Kaşarlı Domates Çorbası": {
+                "days": 2, "category": "Çorba",
+                "ingredients": [
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Rendelenmiş Kaşar / Emmental", "qty": 0.3, "unit": "paket", "market": "PENNY", "cost": 0.60},
+                    {"name": "Süt & Tereyağı & Un", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+                ]
+            },
+            "Yayla Çorbası (Naneli)": {
+                "days": 2, "category": "Çorba",
+                "ingredients": [
+                    {"name": "Yoğurt (Körfez / Griechischer)", "qty": 0.4, "unit": "kg", "market": "PENNY", "cost": 0.90},
+                    {"name": "Pirinç (3 kaşık)", "qty": 0.1, "unit": "paket", "market": "Kiler", "cost": 0.20},
+                    {"name": "Tereyağı & Nane", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Tavuk Suyu Şehriye Çorbası": {
+                "days": 2, "category": "Çorba",
+                "ingredients": [
+                    {"name": "Tavuk Göğsü (Haşlamalık)", "qty": 0.3, "unit": "paket", "market": "PENNY", "cost": 1.20},
+                    {"name": "Arpa / Tel Şehriye (Kritharaki)", "qty": 0.2, "unit": "paket", "market": "PENNY", "cost": 0.30},
+                    {"name": "Limon & Maydanoz", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.50}
+                ]
+            }
+        },
 
-    calendar_html = """
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-      <style>
-        .dishes-chip {
-          display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: grab; user-select: none; transition: all 0.2s;
+        # 🍲 ANA YEMEKLER
+        "mains": {
+            # 3 Günlük Bereketli Tencere Yemekleri
+            "Kuru Fasülye (Pirinç Pilavlı)": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Kuru Fasulye (500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                    {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                    {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Tereyağı & Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+                ]
+            },
+            "Bezelye Pilavı (Havuçlu)": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Dondurulmuş / Konserve Bezelye", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.19},
+                    {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                    {"name": "Havuç", "qty": 0.25, "unit": "kg", "market": "PENNY", "cost": 0.45},
+                    {"name": "Tereyağı", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.50}
+                ]
+            },
+            "Zeytinyağlı Kabak Yemeği": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Kabak (Zucchini)", "qty": 1.0, "unit": "kg (~3-4 adet)", "market": "PENNY", "cost": 1.49},
+                    {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Pirinç (2 kaşık)", "qty": 0.1, "unit": "paket", "market": "Kiler", "cost": 0.20}
+                ]
+            },
+            "Tavuk Pilav (Didiklenmiş Tavuklu)": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Tavuk Göğüs Fileto (600g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 4.50},
+                    {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                    {"name": "Tereyağı & Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.50}
+                ]
+            },
+            "Patates Yemeği (Tencere Usulü)": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Patates (1.2 kg)", "qty": 1.2, "unit": "kg", "market": "PENNY", "cost": 1.40},
+                    {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Sıvı Yağ & Biber", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Zeytinyağlı Taze Yeşil Fasülye": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Taze Yeşil Fasulye (Greenland)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                    {"name": "Zeytinyağı", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+                ]
+            },
+            "Sebzeli Tavuk Sote": {
+                "days": 3, "type": "3 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Tavuk Göğüs Fileto (600g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 4.50},
+                    {"name": "Biber (Kırmızı / Yeşil)", "qty": 0.4, "unit": "kg", "market": "PENNY", "cost": 1.20},
+                    {"name": "Kültür Mantarı (250g)", "qty": 0.6, "unit": "paket", "market": "HIT/PENNY", "cost": 1.30},
+                    {"name": "Kuru Soğan & Sarımsak", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60}
+                ]
+            },
+
+            # 2 Günlük Pratik & Özel Akşam Yemekleri
+            "Kıymalı Makarna (Bolonez Soslu)": {
+                "days": 2, "type": "2 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Dana Kıyma (400-500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 5.49},
+                    {"name": "Makarna (Penne/Fusilli 500g)", "qty": 1, "unit": "paket", "market": "PENNY/HIT", "cost": 0.99},
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Kuru Soğan & Sarımsak", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40}
+                ]
+            },
+            "Mantar Soslu Tavuk & Patates Püresi": {
+                "days": 2, "type": "2 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Tavuk Göğüs Fileto (500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 3.80},
+                    {"name": "Kültür Mantarı (300-400g)", "qty": 1, "unit": "paket", "market": "HIT/PENNY", "cost": 2.19},
+                    {"name": "Krema (H-Sahne 200ml)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                    {"name": "Patates (1 kg püre için)", "qty": 1.0, "unit": "kg", "market": "PENNY", "cost": 1.20},
+                    {"name": "Süt & Tereyağı", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.80}
+                ]
+            },
+            "Fırında Lazanya": {
+                "days": 2, "type": "2 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Dana Kıyma (400-500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 5.49},
+                    {"name": "Lazanya Yaprakları", "qty": 1, "unit": "paket", "market": "PENNY/EDEKA", "cost": 1.49},
+                    {"name": "Domates Püresi (Passata - 2 kutu)", "qty": 2, "unit": "kutu", "market": "PENNY", "cost": 1.38},
+                    {"name": "Rendelenmiş Kaşar / Emmental", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.79},
+                    {"name": "Süt, Un & Tereyağı (Beşamel)", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 1.20}
+                ]
+            },
+            "Sebzeli & Tavuklu Noodle": {
+                "days": 2, "type": "2 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Noodle (2-3 paket)", "qty": 2, "unit": "paket", "market": "PENNY/HIT", "cost": 1.98},
+                    {"name": "Tavuk Göğsü (Didiklenmiş)", "qty": 0.4, "unit": "paket", "market": "PENNY", "cost": 1.50},
+                    {"name": "Garnitür Sebze (Havuç, Biber, Kabak)", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 1.20},
+                    {"name": "Soya Sosu / Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+                ]
+            },
+            "Fırında Kaşarlı Köfte & Patates": {
+                "days": 2, "type": "2 Günlük", "category": "Ana Yemek",
+                "ingredients": [
+                    {"name": "Dana Kıyma veya Hazır Köfte", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 4.99},
+                    {"name": "Patates (1 kg)", "qty": 1.0, "unit": "kg", "market": "PENNY", "cost": 1.20},
+                    {"name": "Rendelenmiş Kaşar / Gouda", "qty": 0.5, "unit": "paket", "market": "PENNY", "cost": 0.90},
+                    {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69}
+                ]
+            }
+        },
+
+        # 🥗 SALATALAR & YAN LEZZETLER
+        "sides": {
+            "Çoban / Gavurdağı Salatası": {
+                "days": 1, "category": "Salata",
+                "ingredients": [
+                    {"name": "Salkım / Mini Domates", "qty": 0.5, "unit": "kg", "market": "PENNY", "cost": 1.29},
+                    {"name": "Salatalık (Gurke 2 adet)", "qty": 2, "unit": "adet", "market": "PENNY", "cost": 0.98},
+                    {"name": "Biber (1 adet)", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                    {"name": "Kuru Soğan", "qty": 0.1, "unit": "kg", "market": "PENNY", "cost": 0.20},
+                    {"name": "Zeytinyağı & Limon", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Akdeniz Yeşillik Salatası (Feldsalat)": {
+                "days": 1, "category": "Salata",
+                "ingredients": [
+                    {"name": "Akdeniz Yeşilliği / Feldsalat", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.39},
+                    {"name": "Beyaz Peynir (Mitakos)", "qty": 0.3, "unit": "paket", "market": "PENNY", "cost": 0.60},
+                    {"name": "Zeytinyağı & Balzamik / Limon", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Havuç Tarator (Yoğurtlu)": {
+                "days": 1, "category": "Meze",
+                "ingredients": [
+                    {"name": "Havuç (4-5 adet)", "qty": 0.5, "unit": "kg", "market": "PENNY", "cost": 0.85},
+                    {"name": "Yoğurt (Körfez / Griechischer)", "qty": 0.4, "unit": "kg", "market": "PENNY", "cost": 0.90},
+                    {"name": "Sarımsak & Zeytinyağı", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Salatalıklı Cacık (Naneli)": {
+                "days": 1, "category": "Meze",
+                "ingredients": [
+                    {"name": "Salatalık (Gurke 2 adet)", "qty": 2, "unit": "adet", "market": "PENNY", "cost": 0.98},
+                    {"name": "Yoğurt (Körfez / Griechischer)", "qty": 0.4, "unit": "kg", "market": "PENNY", "cost": 0.90},
+                    {"name": "Sarımsak, Zeytinyağı & Nane", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Kuru Fasülye Yanı Piyaz": {
+                "days": 1, "category": "Salata",
+                "ingredients": [
+                    {"name": "Haşlanmış Kuru Fasulye", "qty": 0.5, "unit": "paket", "market": "PENNY", "cost": 0.65},
+                    {"name": "Kuru Soğan & Maydanoz", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40},
+                    {"name": "Zeytinyağı, Sumak & Limon", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+                ]
+            },
+            "Yoğurtlu Kabak / Köz Biber Mezesi": {
+                "days": 1, "category": "Meze",
+                "ingredients": [
+                    {"name": "Kabak (2 adet) veya Köz Biber", "qty": 0.6, "unit": "kg", "market": "PENNY", "cost": 0.90},
+                    {"name": "Yoğurt (Körfez / Griechischer)", "qty": 0.4, "unit": "kg", "market": "PENNY", "cost": 0.90},
+                    {"name": "Dereotu & Sarımsak", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.40}
+                ]
+            }
         }
-        .dishes-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-        .dishes-chip:active { cursor: grabbing; }
-        .chip-3d { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.4)); border: 1px solid #10b981; color: #34d399; }
-        .chip-2d { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.4)); border: 1px solid #38bdf8; color: #7dd3fc; }
-        .selected-chip { outline: 2px solid #f59e0b; box-shadow: 0 0 10px #f59e0b !important; }
-        .day-box {
-          background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; min-height: 125px; display: flex; flex-direction: column; transition: background 0.2s, border 0.2s;
-        }
-        .day-box.drag-over { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; }
-        .day-title { font-size: 0.82rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .badge-market { background: #10b981; color: #0f172a; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; }
-        .badge-closed { background: #ef4444; color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; }
-        .assigned-card {
-          background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.15); padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.78rem; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.2s;
-        }
-        .remove-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.85rem; padding: 0 2px; }
-        .remove-btn:hover { color: #ef4444; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-      </style>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-        <span style="font-size: 0.9rem; font-weight: 700; color: #e2e8f0;">🍲 Yemek Kartları Havuzu:</span>
-        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          <button onclick="applyPreset('w1')" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">⚡ 1. Hafta (Taze & Mantar)</button>
-          <button onclick="applyPreset('w2')" style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">⚡ 2. Hafta (Tavuk & Kuru Fasulye)</button>
-          <button onclick="clearCalendar()" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">🧹 Temizle</button>
-        </div>
-      </div>
-
-      <!-- Meal Palette -->
-      <div id="palette" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.1);">
-        <div class="dishes-chip chip-3d" draggable="true" data-name="Kuru fasülye" onclick="selectDish(this)">🍲 Kuru fasülye (3G)</div>
-        <div class="dishes-chip chip-3d" draggable="true" data-name="Bezelye pilavı" onclick="selectDish(this)">🍲 Bezelye pilavı (3G)</div>
-        <div class="dishes-chip chip-3d" draggable="true" data-name="Kabak yemeği" onclick="selectDish(this)">🍲 Kabak yemeği (3G)</div>
-        <div class="dishes-chip chip-3d" draggable="true" data-name="Tavuk pilav" onclick="selectDish(this)">🍲 Tavuk pilav (3G)</div>
-        <div class="dishes-chip chip-3d" draggable="true" data-name="Patates yemeği" onclick="selectDish(this)">🍲 Patates yemeği (3G)</div>
-        <div class="dishes-chip chip-2d" draggable="true" data-name="Kıymalı makarna" onclick="selectDish(this)">🍝 Kıymalı makarna (2G)</div>
-        <div class="dishes-chip chip-2d" draggable="true" data-name="Mantar soslu tavuk" onclick="selectDish(this)">🍗 Mantar soslu tavuk (2G)</div>
-        <div class="dishes-chip chip-2d" draggable="true" data-name="Mercimek çorbası" onclick="selectDish(this)">🥣 Mercimek çorbası (2G)</div>
-        <div class="dishes-chip chip-2d" draggable="true" data-name="Tarhana çorbası" onclick="selectDish(this)">🥣 Tarhana çorbası (2G)</div>
-        <div class="dishes-chip chip-2d" draggable="true" data-name="Lazanya" onclick="selectDish(this)">🧀 Lazanya (2G)</div>
-        <div class="dishes-chip chip-2d" draggable="true" data-name="Noodle" onclick="selectDish(this)">🍜 Noodle (2G)</div>
-      </div>
-
-      <!-- 7 Days Grid -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;" id="calendarDays">
-        <div class="day-box" id="day-0" onclick="dropToDay(0)">
-          <div class="day-title">Pazartesi <span class="badge-market">🛒 Market</span></div>
-          <div class="day-items" id="items-0"></div>
-        </div>
-        <div class="day-box" id="day-1" onclick="dropToDay(1)">
-          <div class="day-title">Salı</div>
-          <div class="day-items" id="items-1"></div>
-        </div>
-        <div class="day-box" id="day-2" onclick="dropToDay(2)">
-          <div class="day-title">Çarşamba</div>
-          <div class="day-items" id="items-2"></div>
-        </div>
-        <div class="day-box" id="day-3" onclick="dropToDay(3)">
-          <div class="day-title">Perşembe <span class="badge-market">🛒 Market</span></div>
-          <div class="day-items" id="items-3"></div>
-        </div>
-        <div class="day-box" id="day-4" onclick="dropToDay(4)">
-          <div class="day-title">Cuma</div>
-          <div class="day-items" id="items-4"></div>
-        </div>
-        <div class="day-box" id="day-5" onclick="dropToDay(5)">
-          <div class="day-title">Cumartesi</div>
-          <div class="day-items" id="items-5"></div>
-        </div>
-        <div class="day-box" id="day-6" onclick="dropToDay(6)">
-          <div class="day-title">Pazar <span class="badge-closed">⛔ Kapalı</span></div>
-          <div class="day-items" id="items-6"></div>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      let selectedDishName = null;
-      let calendarState = [[], [], [], [], [], [], []];
-
-      // Load saved state from LocalStorage
-      try {
-        const saved = localStorage.getItem('bizim_market_week_plan');
-        if (saved) {
-          calendarState = JSON.parse(saved);
-        }
-      } catch(e) {}
-
-      function saveState() {
-        try {
-          localStorage.setItem('bizim_market_week_plan', JSON.stringify(calendarState));
-        } catch(e) {}
-      }
-
-      function renderCalendar() {
-        for (let i = 0; i < 7; i++) {
-          const container = document.getElementById('items-' + i);
-          container.innerHTML = '';
-          calendarState[i].forEach((meal, idx) => {
-            const card = document.createElement('div');
-            card.className = 'assigned-card';
-            card.innerHTML = `<span>${meal}</span><button class="remove-btn" onclick="event.stopPropagation(); removeMeal(${i}, ${idx})">✕</button>`;
-            container.appendChild(card);
-          });
-        }
-      }
-
-      function selectDish(el) {
-        document.querySelectorAll('.dishes-chip').forEach(c => c.classList.remove('selected-chip'));
-        if (selectedDishName === el.dataset.name) {
-          selectedDishName = null;
-        } else {
-          selectedDishName = el.dataset.name;
-          el.classList.add('selected-chip');
-        }
-      }
-
-      function dropToDay(dayIdx) {
-        if (selectedDishName) {
-          if (!calendarState[dayIdx].includes(selectedDishName)) {
-            calendarState[dayIdx].push(selectedDishName);
-            saveState();
-            renderCalendar();
-          }
-        }
-      }
-
-      function removeMeal(dayIdx, mealIdx) {
-        calendarState[dayIdx].splice(mealIdx, 1);
-        saveState();
-        renderCalendar();
-      }
-
-      // Drag and drop event listeners
-      document.querySelectorAll('.dishes-chip').forEach(chip => {
-        chip.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text/plain', chip.dataset.name);
-        });
-      });
-
-      for (let i = 0; i < 7; i++) {
-        const dayEl = document.getElementById('day-' + i);
-        dayEl.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          dayEl.classList.add('drag-over');
-        });
-        dayEl.addEventListener('dragleave', () => {
-          dayEl.classList.remove('drag-over');
-        });
-        dayEl.addEventListener('drop', (e) => {
-          e.preventDefault();
-          dayEl.classList.remove('drag-over');
-          const mealName = e.dataTransfer.getData('text/plain');
-          if (mealName && !calendarState[i].includes(mealName)) {
-            calendarState[i].push(mealName);
-            saveState();
-            renderCalendar();
-          }
-        });
-      }
-
-      function applyPreset(preset) {
-        if (preset === 'w1') {
-          calendarState = [
-            ["🍗 Mantar soslu tavuk", "🥣 Tarhana çorbası"],
-            ["🍗 Mantar soslu tavuk"],
-            ["🍲 Kabak yemeği"],
-            ["🍲 Kabak yemeği"],
-            ["🍲 Kabak yemeği"],
-            ["🍝 Kıymalı makarna"],
-            ["🍝 Kıymalı makarna"]
-          ];
-        } else if (preset === 'w2') {
-          calendarState = [
-            ["🍲 Tavuk pilav", "🥣 Mercimek çorbası"],
-            ["🍲 Tavuk pilav"],
-            ["🍲 Tavuk pilav"],
-            ["🧀 Lazanya"],
-            ["🧀 Lazanya"],
-            ["🍲 Kuru fasülye"],
-            ["🍲 Kuru fasülye"]
-          ];
-        }
-        saveState();
-        renderCalendar();
-      }
-
-      function clearCalendar() {
-        calendarState = [[], [], [], [], [], [], []];
-        saveState();
-        renderCalendar();
-      }
-
-      renderCalendar();
-    </script>
-    """
-    components.html(calendar_html, height=360)
-
-    st.markdown("---")
+    }
 
     # Pantry Lookup Function using Munich Purchase History
     PANTRY_KEYWORDS = {
         "Kuru Fasulye (500g)": ["fasulye", "bohnen"],
+        "Haşlanmış Kuru Fasulye": ["fasulye", "bohnen"],
+        "Taze Yeşil Fasulye (Greenland)": ["fasulye", "bohnen"],
         "Dondurulmuş / Konserve Bezelye": ["bezelye", "erbsen"],
         "Kabak (Zucchini)": ["kabak", "zucchini"],
+        "Kabak (2 adet) veya Köz Biber": ["kabak", "zucchini", "biber"],
         "Tavuk Göğüs Fileto (600g)": ["tavuk", "fileto", "hähnchen", "pute"],
         "Tavuk Göğüs Fileto (500g)": ["tavuk", "fileto", "hähnchen", "pute"],
+        "Tavuk Göğsü (Haşlamalık)": ["tavuk", "fileto", "hähnchen"],
+        "Tavuk Göğsü (Didiklenmiş)": ["tavuk", "fileto", "hähnchen"],
         "Patates (1.2 kg)": ["patates", "kartoffel"],
         "Patates (1 kg püre için)": ["patates", "kartoffel"],
+        "Patates (1 kg)": ["patates", "kartoffel"],
         "Patates (1 adet)": ["patates", "kartoffel"],
         "Dana Kıyma (400-500g)": ["kıyma", "hackfleisch", "rinderhack"],
+        "Dana Kıyma veya Hazır Köfte": ["kıyma", "köfte", "hackfleisch"],
         "Makarna (Penne/Fusilli 500g)": ["makarna", "fusilli", "penne", "spagh", "rigatoni"],
+        "Lazanya Yaprakları": ["lazanya", "lasagne"],
+        "Noodle (2-3 paket)": ["noodle"],
+        "Arpa / Tel Şehriye (Kritharaki)": ["kritharaki", "şehriye", "reisn"],
         "Kültür Mantarı (300-400g)": ["mantar", "champignon"],
+        "Kültür Mantarı (250g)": ["mantar", "champignon"],
         "Krema (H-Sahne 200ml)": ["h-sahne", "sahne", "krema"],
         "Kırmızı Mercimek (300g)": ["mercimek", "linsen"],
         "Tarhana (Kiler/Evden)": ["tarhana"],
-        "Lazanya Yaprakları": ["lazanya", "lasagne"],
-        "Rendelenmiş Peynir (Emmental/Gouda)": ["peynir", "emmental", "gouda", "weichkäs", "mozzarella"],
-        "Noodle (2-3 paket)": ["noodle"],
-        "Garnitür Sebze (Havuç, Biber, Kabak)": ["havuç", "biber", "kabak"],
+        "Rendelenmiş Kaşar / Emmental": ["peynir", "emmental", "gouda", "kaşar"],
+        "Rendelenmiş Kaşar / Gouda": ["peynir", "emmental", "gouda", "kaşar"],
+        "Beyaz Peynir (Mitakos)": ["mitakos", "peynir", "weichkäs"],
+        "Yoğurt (Körfez / Griechischer)": ["yoğurt", "joghurt", "körfez", "skyr"],
         "Pirinç (Baldo/Jasmin 500g)": ["pirinç", "reis", "kritharaki"],
-        "Pirinç (2 kaşık)": ["pirinç", "reis", "kritharaki"],
+        "Pirinç (2 kaşık)": ["pirinç", "reis"],
+        "Pirinç (3 kaşık)": ["pirinç", "reis"],
         "Kuru Soğan": ["soğan", "zwiebel"],
         "Kuru Soğan & Sarımsak": ["soğan", "sarımsak", "zwiebel"],
+        "Kuru Soğan & Maydanoz": ["soğan", "zwiebel"],
         "Havuç": ["havuç", "karotten"],
-        "Havuç (2 adet)": ["havuç", "karotten"],
         "Havuç (1 adet)": ["havuç", "karotten"],
-        "Domates Püresi (Passata)": ["passata", "püre domates", "salça", "doğranmış domates"],
-        "Tereyağı (Kerrygold / Penny)": ["tereyağ", "butter", "kerrygold"],
-        "Tereyağı & Sıvı Yağ": ["tereyağ", "butter", "yağ"],
+        "Havuç (4-5 adet)": ["havuç", "karotten"],
+        "Salatalık (Gurke 2 adet)": ["salatalık", "gurke"],
+        "Salkım / Mini Domates": ["domates", "tomaten"],
+        "Biber (Kırmızı / Yeşil)": ["biber", "paprika"],
+        "Biber (1 adet)": ["biber", "paprika"],
+        "Akdeniz Yeşilliği / Feldsalat": ["feldsalat", "salata", "yeşillik"],
+        "Domates Püresi (Passata)": ["passata", "püre domates", "salça"],
+        "Domates Püresi (Passata - 2 kutu)": ["passata", "püre domates", "salça"],
+        "Tereyağı": ["tereyağ", "butter", "kerrygold"],
         "Tereyağı & Nane": ["tereyağ", "butter", "nane"],
         "Tereyağı & Salça": ["tereyağ", "butter", "salça"],
-        "Süt & Tereyağı": ["süt", "milch", "tereyağ", "butter"],
-        "Süt, Un & Tereyağı (Beşamel)": ["süt", "milch", "un", "tereyağ"],
-        "Sıvı Yağ & Baharat": ["yağ", "öl", "baharat"],
-        "Sıvı Yağ & Biber": ["yağ", "öl", "biber"],
-        "Soya Sosu / Sıvı Yağ": ["soya", "yağ"]
+        "Tereyağı & Sıvı Yağ": ["tereyağ", "butter", "yağ"],
+        "Süt & Tereyağı": ["süt", "milch", "tereyağ"],
+        "Süt & Tereyağı & Un": ["süt", "milch", "un", "tereyağ"],
+        "Süt, Un & Tereyağı (Beşamel)": ["süt", "milch", "un", "tereyağ"]
     }
 
     def get_pantry_status(ing_name, dataframe):
@@ -1065,153 +1090,116 @@ with tab_planner:
             }
         return {"found": False}
 
-    # Recipe Database
-    RECIPES_DATABASE = {
-        "Kuru fasülye": {
-            "days": 3, "type": "3 Günlük",
-            "ingredients": [
-                {"name": "Kuru Fasulye (500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
-                {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
-                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
-                {"name": "Sıvı Yağ & Baharat", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
-            ]
-        },
-        "Bezelye pilavı": {
-            "days": 3, "type": "3 Günlük",
-            "ingredients": [
-                {"name": "Dondurulmuş / Konserve Bezelye", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.19},
-                {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
-                {"name": "Havuç", "qty": 0.25, "unit": "kg", "market": "PENNY", "cost": 0.45},
-                {"name": "Tereyağı (Kerrygold / Penny)", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.50}
-            ]
-        },
-        "Kabak yemeği": {
-            "days": 3, "type": "3 Günlük",
-            "ingredients": [
-                {"name": "Kabak (Zucchini)", "qty": 1.0, "unit": "kg (~3-4 adet)", "market": "PENNY", "cost": 1.49},
-                {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
-                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
-                {"name": "Pirinç (2 kaşık)", "qty": 0.1, "unit": "paket", "market": "Kiler", "cost": 0.20}
-            ]
-        },
-        "Tavuk pilav": {
-            "days": 3, "type": "3 Günlük",
-            "ingredients": [
-                {"name": "Tavuk Göğüs Fileto (600g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 4.50},
-                {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
-                {"name": "Tereyağı & Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.50}
-            ]
-        },
-        "Patates yemeği": {
-            "days": 3, "type": "3 Günlük",
-            "ingredients": [
-                {"name": "Patates (1.2 kg)", "qty": 1.2, "unit": "kg", "market": "PENNY", "cost": 1.40},
-                {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
-                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
-                {"name": "Sıvı Yağ & Biber", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
-            ]
-        },
-        "Kıymalı makarna": {
-            "days": 2, "type": "2 Günlük",
-            "ingredients": [
-                {"name": "Dana Kıyma (400-500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 5.49},
-                {"name": "Makarna (Penne/Fusilli 500g)", "qty": 1, "unit": "paket", "market": "PENNY/HIT", "cost": 0.99},
-                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
-                {"name": "Kuru Soğan & Sarımsak", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40}
-            ]
-        },
-        "Mantar soslu tavuk ve patates püresi": {
-            "days": 2, "type": "2 Günlük",
-            "ingredients": [
-                {"name": "Tavuk Göğüs Fileto (500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 3.80},
-                {"name": "Kültür Mantarı (300-400g)", "qty": 1, "unit": "paket", "market": "HIT/PENNY", "cost": 2.19},
-                {"name": "Krema (H-Sahne 200ml)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
-                {"name": "Patates (1 kg püre için)", "qty": 1.0, "unit": "kg", "market": "PENNY", "cost": 1.20},
-                {"name": "Süt & Tereyağı", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.80}
-            ]
-        },
-        "Mercimek çorbası": {
-            "days": 2, "type": "2 Günlük",
-            "ingredients": [
-                {"name": "Kırmızı Mercimek (300g)", "qty": 0.6, "unit": "paket (500g)", "market": "PENNY", "cost": 0.85},
-                {"name": "Kuru Soğan", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40},
-                {"name": "Havuç (1 adet)", "qty": 0.15, "unit": "kg", "market": "PENNY", "cost": 0.25},
-                {"name": "Patates (1 adet)", "qty": 0.15, "unit": "kg", "market": "PENNY", "cost": 0.20},
-                {"name": "Tereyağı & Nane", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
-            ]
-        },
-        "Tarhana çorbası": {
-            "days": 2, "type": "2 Günlük",
-            "ingredients": [
-                {"name": "Tarhana (Kiler/Evden)", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.00},
-                {"name": "Tereyağı & Salça", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
-            ]
-        },
-        "Lazanya": {
-            "days": 2, "type": "2 Günlük",
-            "ingredients": [
-                {"name": "Dana Kıyma (400-500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 5.49},
-                {"name": "Lazanya Yaprakları", "qty": 1, "unit": "paket", "market": "PENNY/EDEKA", "cost": 1.49},
-                {"name": "Domates Püresi (Passata - 2 kutu)", "qty": 2, "unit": "kutu", "market": "PENNY", "cost": 1.38},
-                {"name": "Rendelenmiş Peynir (Emmental/Gouda)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.79},
-                {"name": "Süt, Un & Tereyağı (Beşamel)", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 1.20}
-            ]
-        },
-        "Noodle": {
-            "days": 2, "type": "2 Günlük",
-            "ingredients": [
-                {"name": "Noodle (2-3 paket)", "qty": 2, "unit": "paket", "market": "PENNY/HIT", "cost": 1.98},
-                {"name": "Garnitür Sebze (Havuç, Biber, Kabak)", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 1.20},
-                {"name": "Soya Sosu / Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
-            ]
-        }
-    }
+    # 2. QUICK SET MENU COMBOS (HAZIR UYUMLU MENÜLER)
+    st.markdown("#### 🌟 1. Hızlı Set Menü Kombosu Seçin (veya Aşağıdan Serbest Oluşturun):")
+    
+    preset_choice = st.radio(
+        "Hazır Uyumlu Menü Şablonu:",
+        [
+            "🎨 Kendi Menümü Kendim Oluşturacağım (Serbest Seçim)",
+            "🍲 1. Geleneksel Tencere Menüsü: Mercimek Çorbası + Kuru Fasülye & Pilav + Çoban Salata",
+            "🍗 2. Restoran Usulü Özel Menü: Kaşarlı Domates Çorbası + Mantar Soslu Tavuk & Püre + Akdeniz Salatası",
+            "🍝 3. İtalyan Akşamı Menüsü: Tarhana Çorbası + Fırında Lazanya + Havuç Tarator",
+            "🥗 4. Hafif & Diyet Menüsü: Yayla Çorbası + Zeytinyağlı Kabak Yemeği + Salatalıklı Cacık",
+            "🍜 5. Pratik & Hızlı Menü: Tavuk Suyu Şehriye Çorbası + Sebzeli Noodle + Gavurdağı Salatası"
+        ],
+        index=0
+    )
 
-    # Layout: Selection & Strategy
-    pl_c1, pl_c2 = st.columns([1, 1])
+    # Determine default selections based on preset
+    def_soups = []
+    def_mains = []
+    def_sides = []
 
-    with pl_c1:
-        st.markdown("#### 🥘 2. Bu Hafta Yapılacak Yemekleri İşaretleyin:")
-        
-        st.markdown("**Üç Günlük Yemekler:**")
-        sel_3days = []
-        for m_name in ["Kuru fasülye", "Bezelye pilavı", "Kabak yemeği", "Tavuk pilav", "Patates yemeği"]:
-            if st.checkbox(f"🍲 {m_name} (3 Günlük)", value=(m_name in ["Kabak yemeği"]), key=f"chk_{m_name}"):
-                sel_3days.append(m_name)
+    if "1. Geleneksel Tencere" in preset_choice:
+        def_soups = ["Kırmızı Mercimek Çorbası"]
+        def_mains = ["Kuru Fasülye (Pirinç Pilavlı)"]
+        def_sides = ["Çoban / Gavurdağı Salatası"]
+    elif "2. Restoran Usulü" in preset_choice:
+        def_soups = ["Kaşarlı Domates Çorbası"]
+        def_mains = ["Mantar Soslu Tavuk & Patates Püresi"]
+        def_sides = ["Akdeniz Yeşillik Salatası (Feldsalat)"]
+    elif "3. İtalyan Akşamı" in preset_choice:
+        def_soups = ["Tarhana Çorbası"]
+        def_mains = ["Fırında Lazanya"]
+        def_sides = ["Havuç Tarator (Yoğurtlu)"]
+    elif "4. Hafif & Diyet" in preset_choice:
+        def_soups = ["Yayla Çorbası (Naneli)"]
+        def_mains = ["Zeytinyağlı Kabak Yemeği"]
+        def_sides = ["Salatalıklı Cacık (Naneli)"]
+    elif "5. Pratik & Hızlı" in preset_choice:
+        def_soups = ["Tavuk Suyu Şehriye Çorbası"]
+        def_mains = ["Sebzeli & Tavuklu Noodle"]
+        def_sides = ["Çoban / Gavurdağı Salatası"]
+    else:
+        def_soups = ["Kırmızı Mercimek Çorbası"]
+        def_mains = ["Kuru Fasülye (Pirinç Pilavlı)", "Mantar Soslu Tavuk & Patates Püresi"]
+        def_sides = ["Salatalıklı Cacık (Naneli)"]
 
-        st.markdown("**İki Günlük Yemekler:**")
-        sel_2days = []
-        for m_name in ["Kıymalı makarna", "Mantar soslu tavuk ve patates püresi", "Mercimek çorbası", "Tarhana çorbası", "Lazanya", "Noodle"]:
-            if st.checkbox(f"🍝 {m_name} (2 Günlük)", value=(m_name in ["Mantar soslu tavuk ve patates püresi", "Kıymalı makarna"]), key=f"chk_{m_name}"):
-                sel_2days.append(m_name)
+    st.markdown("---")
+    st.markdown("#### 🍱 2. Günün / Haftanın Menü Bileşenleri:")
 
-        selected_meals = sel_3days + sel_2days
-        total_days = sum([RECIPES_DATABASE[m]["days"] for m in selected_meals])
+    c_soup, c_main, c_side = st.columns(3)
 
-    with pl_c2:
-        st.markdown("#### 🛒 3. Münih Market Günleri & Tazelik Rehberi")
-        st.info("""
-        * **1. Gün - PAZARTESİ:** Taze sebze (kabak, mantar), taze tavuk ve kiler temelleri (passata, patates, soğan).
-        * **2. Gün - PERŞEMBE:** Hafta sonu kıyması, lazanya yaprağı ve eksikler (Cuma/Cumartesi kalabalığından önce sakin alışveriş).
-        * ⛔ **PAZAR GÜNLERİ:** Münih'te tüm marketler kapalıdır! Plansız kalıp dışarıdan pahalı sipariş vermemek için Perşembe günü hafta sonu yemeklerini garantiye alın.
-        """)
+    with c_soup:
+        st.markdown("##### 🥣 1. Çorba Seçimi:")
+        selected_soups = st.multiselect(
+            "Çorba(lar):",
+            list(COURSE_DATABASE["soups"].keys()),
+            default=def_soups,
+            key="ms_soups"
+        )
+        for s in selected_soups:
+            st.caption(f"🥣 **{s}** (2 Günlük Tencere)")
 
-        st.markdown("##### ⏳ Bozulma Önleme & Pişirme Sırası:")
-        st.markdown("""
-        1. **1. - 2. Gün:** Mantarlı tavuk veya taze kabak *(Çabuk bozulur)*
-        2. **3. - 4. Gün:** Kıyma (kıymalı makarna veya lazanya)
-        3. **5. - 7. Gün:** Kuru fasulye, patates, bezelye pilavı, çorbalar *(Kilerde ve dolapta uzun süre dayanır)*
-        """)
+    with c_main:
+        st.markdown("##### 🍲 2. Ana Yemek Seçimi:")
+        selected_mains = st.multiselect(
+            "Ana Yemek(ler):",
+            list(COURSE_DATABASE["mains"].keys()),
+            default=def_mains,
+            key="ms_mains"
+        )
+        for m in selected_mains:
+            m_type = COURSE_DATABASE["mains"][m].get("type", "2 Günlük")
+            st.caption(f"🍲 **{m}** ({m_type})")
+
+    with c_side:
+        st.markdown("##### 🥗 3. Salata & Meze Seçimi:")
+        selected_sides = st.multiselect(
+            "Salata / Meze(ler):",
+            list(COURSE_DATABASE["sides"].keys()),
+            default=def_sides,
+            key="ms_sides"
+        )
+        for d in selected_sides:
+            st.caption(f"🥗 **{d}** (Taze Günlük Eşlikçi)")
+
+    all_selected_dishes = []
+    dish_meta_map = {}
+
+    for s_name in selected_soups:
+        all_selected_dishes.append(s_name)
+        dish_meta_map[s_name] = COURSE_DATABASE["soups"][s_name]
+
+    for m_name in selected_mains:
+        all_selected_dishes.append(m_name)
+        dish_meta_map[m_name] = COURSE_DATABASE["mains"][m_name]
+
+    for d_name in selected_sides:
+        all_selected_dishes.append(d_name)
+        dish_meta_map[d_name] = COURSE_DATABASE["sides"][d_name]
 
     st.markdown("---")
 
-    # Aggregated Shopping List with "Evde Olabilir" Detection
-    if selected_meals:
+    # 3. CONSOLIDATED SHOPPING LIST WITH PANTRY DETECTION
+    if all_selected_dishes:
+        # Group ingredients & calculate quantities
         ing_dict = {}
 
-        for m_name in selected_meals:
-            m_data = RECIPES_DATABASE[m_name]
-            for ing in m_data["ingredients"]:
+        for dish_name in all_selected_dishes:
+            d_data = dish_meta_map[dish_name]
+            for ing in d_data["ingredients"]:
                 i_name = ing["name"]
                 if i_name not in ing_dict:
                     ing_dict[i_name] = {
@@ -1220,38 +1208,38 @@ with tab_planner:
                         "unit": ing["unit"],
                         "market": ing["market"],
                         "cost": ing["cost"],
-                        "meals": [m_name]
+                        "dishes": [dish_name]
                     }
                 else:
                     ing_dict[i_name]["qty"] += ing["qty"]
                     ing_dict[i_name]["cost"] += ing["cost"]
-                    ing_dict[i_name]["meals"].append(m_name)
+                    ing_dict[i_name]["dishes"].append(dish_name)
 
-        st.markdown("### 🛒 4. Akıllı Alışveriş Listesi & 'Evde Olabilir' Kontrolü")
-        st.caption("Geçmiş fişleriniz taranarak kilerde veya buzdolabında olma ihtimali olan malzemeler işaretlenmiştir. Evde olanları işaretleyerek sepet tutarından düşebilirsiniz:")
+        # Active vs Pantry Split
+        st.markdown("### 🛒 3. Menü Alışveriş Listesi & 'Evde Olabilir' Kontrolü")
+        st.caption("Çorba, ana yemek ve salatanın ortak malzemeleri toplanmış ve geçmiş Münih fişlerinize göre evde olma ihtimali olanlar listelenmiştir:")
 
-        # Render Item Rows with Pantry Status
         gross_total = 0.0
         pantry_savings = 0.0
         active_items = []
         pantry_items = []
 
-        # Table header
-        st.markdown("<div style='background: rgba(128,128,128,0.1); padding: 8px 12px; border-radius: 6px; font-weight: 700; display: flex; justify-content: space-between;'><span>Malzeme & Miktar</span><span>Önerilen Market & Tutar</span></div>", unsafe_allow_html=True)
+        # Header bar
+        st.markdown("<div style='background: rgba(128,128,128,0.12); padding: 8px 14px; border-radius: 8px; font-weight: 700; display: flex; justify-content: space-between;'><span>Malzeme & Kullanılacağı Yemekler</span><span>Önerilen Market & Tutar</span></div>", unsafe_allow_html=True)
 
         for i_idx, (i_name, info) in enumerate(ing_dict.items()):
             gross_total += info["cost"]
             pantry_info = get_pantry_status(i_name, df)
 
-            col_item1, col_item2 = st.columns([3, 2])
-            with col_item1:
+            col_i1, col_i2 = st.columns([3, 2])
+            with col_i1:
                 qty_str = f"{info['qty']:.1f} {info['unit']}" if isinstance(info['qty'], float) and info['qty'] % 1 != 0 else f"{int(info['qty'])} {info['unit']}"
-                st.markdown(f"**{info['name']}** (`{qty_str}`) — *Kullanım: {', '.join(info['meals'])}*")
+                st.markdown(f"**{info['name']}** (`{qty_str}`) — *Kullanım: {', '.join(info['dishes'])}*")
                 if pantry_info["found"]:
                     st.caption(f"💡 **Evde Olabilir:** En son **{pantry_info['date']}** ({pantry_info['days_text']}) **{pantry_info['market']}**'den alınmıştı: *'{pantry_info['item']}'*")
 
-            with col_item2:
-                in_pantry = st.checkbox("✅ Evde Zaten Var (Listeden Çıkar)", key=f"chk_pantry_{i_idx}")
+            with col_i2:
+                in_pantry = st.checkbox("✅ Evde Zaten Var (Listeden Çıkar)", key=f"menu_pantry_{i_idx}")
                 st.markdown(f"🏪 **{info['market']}** • **€{info['cost']:.2f}**")
 
             if in_pantry:
@@ -1271,17 +1259,19 @@ with tab_planner:
         # Budget & Savings Metrics
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Toplam Planlanan Gün", f"{total_days} Gün", f"{len(selected_meals)} Yemek")
+        m1.metric("Seçilen Menü Çeşidi", f"{len(all_selected_dishes)} Çeşit", f"{len(selected_soups)} Çorba + {len(selected_mains)} Ana + {len(selected_sides)} Salata")
         m2.metric("Brüt Malzeme Maliyeti", f"€{gross_total:,.2f}", "Tüm Malzemeler")
         m3.metric("🏠 Evdekilerden Tasarruf", f"€{pantry_savings:,.2f}", f"{len(pantry_items)} Ürün Evde Var!", delta_color="normal")
         m4.metric("💰 ÖDENECEK NET TUTAR", f"€{net_total:,.2f}", "Sepet Tutarı", delta_color="inverse")
 
-        # WhatsApp Export Format
-        wa_text = f"*💑 BİZİM MARKET ALIŞVERİŞ LİSTESİ ({total_days} GÜNLÜK)*\n"
-        wa_text += f"*Menü:* {', '.join(selected_meals)}\n"
-        wa_text += f"*Ödenecek Net Tutar:* €{net_total:,.2f} *(Evdeki malzemelerle €{pantry_savings:,.2f} tasarruf edildi)*\n\n"
+        # WhatsApp Ready Format
+        wa_text = "*💑 BİZİM GÜNÜN / HAFTANIN MENÜSÜ & MARKET LİSTESİ*\n\n"
+        wa_text += f"*🥣 Çorba:* {', '.join(selected_soups) if selected_soups else 'Seçilmedi'}\n"
+        wa_text += f"*🍲 Ana Yemek:* {', '.join(selected_mains) if selected_mains else 'Seçilmedi'}\n"
+        wa_text += f"*🥗 Salata & Meze:* {', '.join(selected_sides) if selected_sides else 'Seçilmedi'}\n\n"
+        wa_text += f"*💰 Ödenecek Net Tutar:* €{net_total:,.2f} *(Evdeki malzemelerle €{pantry_savings:,.2f} tasarruf edildi)*\n\n"
         
-        wa_text += "*🛒 SATIN ALINACAKLAR (Eksikler):*\n"
+        wa_text += "*🛒 SATIN ALINACAK EKSİKLER:*\n"
         for it in active_items:
             wa_text += f"- [ ] {it['name']} ({it['qty']}) -> {it['market']} (~€{it['cost']:.2f})\n"
         
@@ -1290,13 +1280,13 @@ with tab_planner:
             for p_it in pantry_items:
                 wa_text += f"- [x] {p_it}\n"
         
-        wa_text += "\n📍 Tavsiye: Markete Pazartesi & Perşembe günleri tok karnına gidilsin! 😊"
+        wa_text += "\n📍 Not: Markete tok karnına gidilsin, ekstra abur cubur alınmasın! 😊"
 
-        with st.expander("📲 Sevgiline WhatsApp'tan Göndermek İçin Listeyi Kopyala", expanded=True):
+        with st.expander("📲 Sevgiline WhatsApp'tan Göndermek İçin Menü & Listeyi Kopyala", expanded=True):
             st.code(wa_text, language="text")
 
     else:
-        st.warning("Lütfen yukarıdan en az bir yemek seçin.")
+        st.warning("Lütfen yukarıdan en az bir çorba, ana yemek veya salata seçin.")
 
 # --------------------------------------------------------
 # TAB 5: ORİJİNAL FİŞ GALERİSİ
