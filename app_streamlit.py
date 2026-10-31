@@ -30,7 +30,7 @@ st.markdown("""
         background: rgba(128, 128, 128, 0.08);
         border: 1px solid rgba(128, 128, 128, 0.2);
         border-radius: 14px;
-        padding: 16px 20px;
+        padding: 14px 18px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         transition: transform 0.2s ease, border-color 0.2s ease;
     }
@@ -44,18 +44,110 @@ st.markdown("""
         opacity: 0.85;
     }
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        font-size: 1.6rem !important;
+        font-size: 1.5rem !important;
         font-weight: 800 !important;
     }
 
     /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+        gap: 6px;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
-        padding: 8px 16px;
+        padding: 8px 14px;
         font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* 📱 Instagram-like Sleek, Compact Mobile UI */
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 1.2rem !important;
+            padding-bottom: 2.5rem !important;
+            padding-left: 0.6rem !important;
+            padding-right: 0.6rem !important;
+        }
+        /* Make columns 2-by-2 grid instead of 100% full-screen vertical blocks */
+        div[data-testid="column"] {
+            min-width: calc(50% - 6px) !important;
+            max-width: calc(50% - 6px) !important;
+            flex: 1 1 calc(50% - 6px) !important;
+            margin-bottom: 6px !important;
+            padding: 0 2px !important;
+        }
+        /* Metric cards: Compact & Elegant */
+        div[data-testid="stMetric"] {
+            padding: 8px 10px !important;
+            border-radius: 10px !important;
+        }
+        div[data-testid="stMetric"] label {
+            font-size: 0.70rem !important;
+            margin-bottom: 2px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+        }
+        div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
+            font-size: 0.65rem !important;
+        }
+        /* Mobile Typography: Instagram-like readable sizes */
+        h1 {
+            font-size: 1.28rem !important;
+            margin-bottom: 0.2rem !important;
+        }
+        h2 {
+            font-size: 1.12rem !important;
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.2rem !important;
+        }
+        h3 {
+            font-size: 0.98rem !important;
+            margin-top: 0.4rem !important;
+            margin-bottom: 0.2rem !important;
+        }
+        h4, h5 {
+            font-size: 0.86rem !important;
+            margin-top: 0.3rem !important;
+            margin-bottom: 0.15rem !important;
+        }
+        p, span, label, div {
+            font-size: 0.82rem !important;
+            line-height: 1.35 !important;
+        }
+        /* Compact horizontal scrolling tabs */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 4px !important;
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            scrollbar-width: none !important;
+        }
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+            display: none !important;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 6px 9px !important;
+            font-size: 0.76rem !important;
+            white-space: nowrap !important;
+        }
+        /* Compact multiselect & form inputs */
+        div[data-baseweb="select"] {
+            font-size: 0.82rem !important;
+        }
+        div[data-testid="stRadio"] label {
+            padding: 2px 4px !important;
+            font-size: 0.80rem !important;
+        }
+        div[data-testid="stVerticalBlock"] {
+            gap: 0.5rem !important;
+        }
+        /* Compact tables & dataframes */
+        div[data-testid="stDataFrame"] {
+            font-size: 0.78rem !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -1150,6 +1242,18 @@ with tab_planner:
         def_mains = ["Kuru Fasülye (Pirinç Pilavlı)", "Mantar Soslu Tavuk & Patates Püresi"]
         def_sides = ["Salatalıklı Cacık (Naneli)"]
 
+    # 🔄 SYNC PRESET TO SESSION STATE SO MULTISELECT UPDATES IMMEDIATELY ON CLICK
+    if "active_preset_tracker" not in st.session_state:
+        st.session_state["active_preset_tracker"] = preset_choice
+        st.session_state["ms_soups"] = def_soups
+        st.session_state["ms_mains"] = def_mains
+        st.session_state["ms_sides"] = def_sides
+    elif st.session_state["active_preset_tracker"] != preset_choice:
+        st.session_state["active_preset_tracker"] = preset_choice
+        st.session_state["ms_soups"] = def_soups
+        st.session_state["ms_mains"] = def_mains
+        st.session_state["ms_sides"] = def_sides
+
     st.markdown("---")
     st.markdown("#### 🍱 2. Günün & Haftanın Menü Bileşenleri:")
 
@@ -1160,7 +1264,6 @@ with tab_planner:
         selected_soups = st.multiselect(
             "Çorba(lar):",
             list(COURSE_DATABASE["soups"].keys()),
-            default=def_soups,
             key="ms_soups"
         )
         for s in selected_soups:
@@ -1172,7 +1275,6 @@ with tab_planner:
         selected_mains = st.multiselect(
             "Ana Yemek(ler):",
             list(COURSE_DATABASE["mains"].keys()),
-            default=def_mains,
             key="ms_mains"
         )
         for m in selected_mains:
@@ -1185,7 +1287,6 @@ with tab_planner:
         selected_sides = st.multiselect(
             "Salata / Meze(ler):",
             list(COURSE_DATABASE["sides"].keys()),
-            default=def_sides,
             key="ms_sides"
         )
         for d in selected_sides:
