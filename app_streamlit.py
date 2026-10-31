@@ -603,6 +603,33 @@ with col_b3:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # ========================================================
+# 🏠 DOLAPTAKİ HAZIR YEMEKLERİMİZ WIDGET (BİTTİ Mİ KONTROLÜ)
+# ========================================================
+all_meal_records = load_meal_history()
+active_home_meals = [m for m in all_meal_records if m.get("durum", "aktif") == "aktif"]
+
+if active_home_meals:
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 78, 59, 0.3)); border: 1px solid #10b981; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
+        <span style="font-weight: 700; color: #34d399; font-size: 0.92rem;">🍲 Dolapta Hazır Yemeğimiz Var! (Önce Bunları Bitirelim)</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    for hm in active_home_meals:
+        hm_c1, hm_c2 = st.columns([5, 1])
+        with hm_c1:
+            st.markdown(f"**🍲 {hm.get('yemek')}** (`{hm.get('porsiyon_gun', '2 gün')}` • {hm.get('tarih')} • *{hm.get('kim_yapti', 'Birlikte')}*)")
+            if hm.get("not") and hm.get("not") != "Afiyet olsun!":
+                st.caption(f"📝 *Not: {hm.get('not')}*")
+        with hm_c2:
+            if st.button("✅ Bitti!", key=f"btn_finish_top_{hm.get('id')}", use_container_width=True, help="Yemek bittiyse tıklayın, dolaptan düşsün"):
+                hm["durum"] = "bitti"
+                save_meal_history(all_meal_records)
+                st.success(f"'{hm.get('yemek')}' bitti olarak işaretlendi!")
+                st.rerun()
+    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+# ========================================================
 # KPI METRICS ROW
 # ========================================================
 total_spend = filtered_df["toplam_fiyat"].sum()
@@ -1485,6 +1512,7 @@ with tab_planner:
                 c_duration = st.selectbox("⏳ Kaç Gün Yetti / Sürdü?:", ["1 gün", "2 gün", "3 gün", "4 gün", "5+ gün"], index=1)
                 c_rating = st.selectbox("⭐ Lezzet / Memnuniyet:", ["⭐⭐⭐⭐⭐ (Efsane oldu!)", "⭐⭐⭐⭐ (Çok lezzetli)", "⭐⭐⭐ (İyiydi)", "⭐⭐ (Geliştirilmeli)"], index=0)
 
+            c_status_choice = st.selectbox("🍲 Yemek Durumu:", ["Dolapta Hazır (Hala Yeniyor) 🟢", "Yendi & Bitti ⚪"], index=0)
             c_notes = st.text_area("📝 Notlar & Hatırlatmalar:", placeholder="Örn: Tuzu ve baharatı tam kıvamındaydı, 3 gün rahat yettik. Bir dahakine yanına cacık da yapalım.")
 
             submit_cooked = st.form_submit_button("💾 Yemeği Geçmişe Kaydet & Arşivle", type="primary", use_container_width=True)
@@ -1497,6 +1525,7 @@ with tab_planner:
                     "kim_yapti": c_chef,
                     "porsiyon_gun": c_duration,
                     "puan": c_rating.split(" ")[0],
+                    "durum": "aktif" if "Dolapta" in c_status_choice else "bitti",
                     "not": c_notes.strip() if c_notes else "Afiyet olsun!"
                 }
                 meal_history.insert(0, new_entry)
@@ -1526,10 +1555,28 @@ with tab_planner:
         fav_dish = max(dish_counts, key=dish_counts.get) if dish_counts else "-"
         h_col3.metric("En Çok Yapılan", fav_dish, f"{dish_counts.get(fav_dish, 0)} kez pişirildi")
 
+        # Show active meals cards with finish button
+        active_in_history = [m for m in meal_history if m.get("durum", "bitti") == "aktif"]
+        if active_in_history:
+            st.markdown("###### 🟢 Şu An Dolapta Hazır Olanlar (Tükendikçe 'Bitti'ye basın):")
+            for a_h in active_in_history:
+                ah_c1, ah_c2 = st.columns([5, 1])
+                with ah_c1:
+                    st.markdown(f"**🍲 {a_h.get('yemek')}** ({a_h.get('porsiyon_gun', '2 gün')} • {a_h.get('tarih')} • *{a_h.get('kim_yapti', 'Birlikte')}*)")
+                with ah_c2:
+                    if st.button("✅ Bitti!", key=f"btn_finish_hist_{a_h.get('id')}", use_container_width=True):
+                        a_h["durum"] = "bitti"
+                        save_meal_history(meal_history)
+                        st.success(f"'{a_h.get('yemek')}' bitti olarak işaretlendi!")
+                        st.rerun()
+
         # History Dataframe
         history_df = pd.DataFrame(meal_history)
-        display_hist = history_df[["tarih", "yemek", "kim_yapti", "porsiyon_gun", "puan", "not"]].copy()
-        display_hist.columns = ["Tarih", "Yemek Adı", "Kimin Eline Sağlık?", "Kaç Gün Gitti?", "Puan", "Notlar"]
+        if "durum" not in history_df.columns:
+            history_df["durum"] = "bitti"
+        history_df["durum_badge"] = history_df["durum"].map(lambda x: "🟢 Dolapta Var" if x == "aktif" else "⚪ Bitti")
+        display_hist = history_df[["tarih", "yemek", "durum_badge", "kim_yapti", "porsiyon_gun", "puan", "not"]].copy()
+        display_hist.columns = ["Tarih", "Yemek Adı", "Durum", "Kimin Eline Sağlık?", "Kaç Gün Gitti?", "Puan", "Notlar"]
         st.dataframe(display_hist, use_container_width=True)
     else:
         st.info("Henüz geçmişe kaydedilmiş yemek bulunmuyor. Yaptığınız yemekleri yukarıdaki butondan kaydedebilirsiniz!")
