@@ -23,7 +23,7 @@ st.set_page_config(
 )
 
 # ========================================================
-# 🎨 UNIFIED MODERN RESPONSIVE STYLING (THEME-NEUTRAL & INSTAGRAM-COMPACT)
+# 🎨 CLEAN MODERN LIGHT THEME & MOBILE-OPTIMIZED STYLING
 # ========================================================
 st.markdown("""
 <style>
@@ -31,17 +31,67 @@ st.markdown("""
     #MainMenu, footer { visibility: hidden; }
     header[data-testid="stHeader"] { background: transparent !important; }
     div[data-testid="stToolbar"], div[data-testid="stDecoration"], .stDeployButton { display: none !important; }
+    div[data-testid="stCustomComponentV1"], iframe[height="0"] { display: none !important; height: 0 !important; }
     
-    html, body, [class*="css"] {
+    html, body, [class*="css"], .stApp {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
     }
     .block-container {
-        padding-top: 0.8rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 2rem !important;
         max-width: 1200px;
     }
 
-    /* 2. Responsive Instagram-Style KPI Grid (3x2 on mobile, 6x1 on desktop) */
+    /* 📱 2. Sidebar Toggle Button: Ultra-Visible Emerald Green Badge */
+    div[data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 9999999 !important;
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        background: #ffffff !important;
+        border: 2px solid #10b981 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25) !important;
+        width: 42px !important;
+        height: 42px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+    }
+    div[data-testid="collapsedControl"]:hover {
+        background: #f0fdf4 !important;
+    }
+    div[data-testid="collapsedControl"] button {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    div[data-testid="collapsedControl"] svg {
+        fill: #10b981 !important;
+        stroke: #10b981 !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    /* 3. Sidebar Appearance */
+    section[data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+        border-right: 1px solid #e2e8f0 !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #0f172a !important;
+    }
+
+    /* 4. Responsive Instagram-Style KPI Grid (3x2 on mobile, 6x1 on desktop) */
     .insta-kpi-grid {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
@@ -55,23 +105,25 @@ st.markdown("""
         margin: 6px 0 10px 0;
     }
     .insta-kpi-card {
-        background: rgba(128, 128, 128, 0.08);
-        border: 1px solid rgba(128, 128, 128, 0.2);
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
         border-radius: 10px;
-        padding: 7px 10px;
+        padding: 8px 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         display: flex;
         flex-direction: column;
         justify-content: center;
         transition: transform 0.15s ease, border-color 0.15s ease;
     }
     .insta-kpi-card:hover {
-        border-color: #10b981;
+        border-color: #10b981 !important;
         transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
     }
     .insta-kpi-title {
         font-size: 0.68rem;
         font-weight: 600;
-        opacity: 0.72;
+        color: #64748b !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -79,40 +131,43 @@ st.markdown("""
         letter-spacing: 0.02em;
     }
     .insta-kpi-val {
-        font-size: 1.12rem;
+        font-size: 1.15rem;
         font-weight: 800;
+        color: #0f172a !important;
         line-height: 1.25;
         margin: 2px 0 1px 0;
     }
     .insta-kpi-sub {
         font-size: 0.65rem;
-        opacity: 0.65;
+        color: #94a3b8 !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* 3. Streamlit Built-in Metric Cards Styling (Adaptive) */
+    /* 5. Streamlit Built-in Metric Cards Styling */
     div[data-testid="stMetric"] {
-        background: rgba(128, 128, 128, 0.08) !important;
-        border: 1px solid rgba(128, 128, 128, 0.2) !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
         border-radius: 10px !important;
         padding: 8px 12px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
     }
     div[data-testid="stMetric"] label {
         font-size: 0.75rem !important;
         font-weight: 600 !important;
-        opacity: 0.8 !important;
+        color: #64748b !important;
     }
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {
         font-size: 1.25rem !important;
         font-weight: 800 !important;
+        color: #0f172a !important;
     }
 
-    /* 4. Tabs Styling: Sleek & Scrollable */
+    /* 6. Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 4px;
-        border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+        border-bottom: 1px solid #e2e8f0;
         padding-bottom: 2px;
     }
     .stTabs [data-baseweb="tab"] {
@@ -120,9 +175,16 @@ st.markdown("""
         padding: 6px 12px;
         font-weight: 600;
         font-size: 0.85rem;
+        color: #475569 !important;
+        background: transparent;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #ffffff !important;
+        color: #10b981 !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
     }
 
-    /* 5. Buttons & Form Controls: Sleek & Compact */
+    /* 7. Buttons & Form Controls */
     .stButton > button, .stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
         border-radius: 10px !important;
         font-weight: 700 !important;
@@ -135,24 +197,15 @@ st.markdown("""
     div[data-baseweb="select"] > div, .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input {
         border-radius: 10px !important;
         font-size: 0.86rem !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
     }
 
-    /* 6. Active Meal Box */
-    .meal-finish-card {
-        background: rgba(16, 185, 129, 0.08);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        border-radius: 10px;
-        padding: 6px 10px;
-        margin-bottom: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    /* 📱 7. Mobile Overrides: Instagram-like Compact Proportions */
+    /* 📱 8. Mobile Overrides: Instagram-like Compact Proportions */
     @media (max-width: 768px) {
         .block-container {
-            padding-top: 0.6rem !important;
+            padding-top: 3.8rem !important; /* Leaves clear space for top floating menu button */
             padding-bottom: calc(2rem + env(safe-area-inset-bottom)) !important;
             padding-left: 0.5rem !important;
             padding-right: 0.5rem !important;
@@ -725,15 +778,15 @@ budget_color = "#10b981" if remaining_budget >= 0 else "#ef4444"
 rem_status = f"Kalan: €{remaining_budget:,.2f}" if remaining_budget >= 0 else f"Bütçe Aşıldı: -€{abs(remaining_budget):,.2f}"
 
 st.markdown(f"""
-<div style="background: rgba(128, 128, 128, 0.08); border: 1px solid rgba(128, 128, 128, 0.2); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;">
+<div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem; font-weight: 600; margin-bottom: 6px;">
-        <span>🎯 <b>Ekim Bütçesi:</b> €{oct_spend:,.2f} / €{budget_goal:,.2f} <span style="opacity: 0.7; font-weight: 500;">(%{budget_pct:.0f})</span></span>
+        <span>🎯 <b>Ekim Bütçesi:</b> €{oct_spend:,.2f} / €{budget_goal:,.2f} <span style="color: #64748b; font-weight: 500;">(%{budget_pct:.0f})</span></span>
         <span style="color: {budget_color}; font-weight: 700;">{rem_status}</span>
     </div>
-    <div style="width: 100%; height: 7px; background: rgba(128, 128, 128, 0.2); border-radius: 4px; overflow: hidden;">
+    <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
         <div style="width: {min(budget_pct, 100)}%; height: 100%; background: {budget_color}; border-radius: 4px;"></div>
     </div>
-    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; opacity: 0.7; margin-top: 4px;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #64748b; margin-top: 4px;">
         <span>Geçen Ay (Eylül): €{sep_spend:,.2f}</span>
         <span>Hedef: €{budget_goal:,.0f}/ay</span>
     </div>
@@ -748,8 +801,8 @@ active_home_meals = [m for m in all_meal_records if m.get("durum", "aktif") == "
 
 if active_home_meals:
     st.markdown("""
-    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 6px 12px; margin-bottom: 6px;">
-        <span style="font-weight: 700; color: #10b981; font-size: 0.88rem;">🍲 Dolapta Hazır Yemeğimiz Var! (Önce Bunları Bitirelim)</span>
+    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 6px 12px; margin-bottom: 6px;">
+        <span style="font-weight: 700; color: #166534; font-size: 0.88rem;">🍲 Dolapta Hazır Yemeğimiz Var! (Önce Bunları Bitirelim)</span>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1849,23 +1902,28 @@ with tab_add:
 
     input_method = st.radio(
         "Görsel Yükleme Yöntemi:",
-        ["📱 Telefon / Web Kamerasından Çek", "📁 Galeriden / Dosyadan Seç", "📝 Sadece Kalemleri Manuel Gir"],
+        ["📁 Galeriden / Dosyadan Seç (veya Fotoğraf Çek)", "📱 Web Kamerasını Başlat", "📝 Sadece Kalemleri Manuel Gir"],
+        index=0,
         horizontal=True
     )
 
-    if input_method == "📱 Telefon / Web Kamerasından Çek":
-        cam_file = st.camera_input("Kamerayı kasa fişine doğru tutun ve çekin:")
-        if cam_file:
-            receipt_image_bytes = cam_file.getvalue()
-            receipt_filename = f"cam_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
-            st.success("✅ Fotoğraf başarıyla yakalandı!")
-    elif input_method == "📁 Galeriden / Dosyadan Seç":
-        gal_file = st.file_uploader("Kasa Fişi Fotoğrafı Seçin:", type=["png", "jpg", "jpeg", "webp"], key="tab_gal_file")
+    if input_method == "📁 Galeriden / Dosyadan Seç (veya Fotoğraf Çek)":
+        gal_file = st.file_uploader(
+            "Kasa Fişi Fotoğrafı Seçin (Telefonunuzdan anında çekebilir veya galeriden yükleyebilirsiniz):",
+            type=["png", "jpg", "jpeg", "webp"],
+            key="tab_gal_file"
+        )
         if gal_file:
             receipt_image_bytes = gal_file.getvalue()
             receipt_filename = gal_file.name
             st.image(gal_file, caption=f"Yüklenen: {gal_file.name}", width=260)
             st.success("✅ Görsel seçildi!")
+    elif input_method == "📱 Web Kamerasını Başlat":
+        cam_file = st.camera_input("Kamerayı kasa fişine doğru tutun ve çekin:")
+        if cam_file:
+            receipt_image_bytes = cam_file.getvalue()
+            receipt_filename = f"cam_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+            st.success("✅ Fotoğraf başarıyla yakalandı!")
 
     st.markdown("---")
     st.markdown("### 1️⃣ Fiş Bilgileri")
