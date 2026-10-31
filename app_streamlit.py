@@ -22,108 +22,206 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Professional Adaptive CSS (Dark & Light Mode Friendly, No White-on-White Bugs!)
+# ========================================================
+# 🎨 UNIFIED MODERN RESPONSIVE STYLING (THEME-NEUTRAL & INSTAGRAM-COMPACT)
+# ========================================================
 st.markdown("""
 <style>
-    /* Metric Cards Styling: Adaptive to Streamlit theme */
-    div[data-testid="stMetric"] {
+    /* 1. App Chrome: Clean & Modern */
+    #MainMenu, footer { visibility: hidden; }
+    header[data-testid="stHeader"] { background: transparent !important; }
+    div[data-testid="stToolbar"], div[data-testid="stDecoration"], .stDeployButton { display: none !important; }
+    
+    html, body, [class*="css"] {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .block-container {
+        padding-top: 0.8rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 1200px;
+    }
+
+    /* 2. Responsive Instagram-Style KPI Grid (3x2 on mobile, 6x1 on desktop) */
+    .insta-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        margin: 6px 0 10px 0;
+    }
+    .insta-kpi-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin: 6px 0 10px 0;
+    }
+    .insta-kpi-card {
         background: rgba(128, 128, 128, 0.08);
         border: 1px solid rgba(128, 128, 128, 0.2);
-        border-radius: 14px;
-        padding: 14px 18px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        border-radius: 10px;
+        padding: 7px 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: transform 0.15s ease, border-color 0.15s ease;
     }
-    div[data-testid="stMetric"]:hover {
+    .insta-kpi-card:hover {
         border-color: #10b981;
-        transform: translateY(-2px);
+        transform: translateY(-1px);
+    }
+    .insta-kpi-title {
+        font-size: 0.68rem;
+        font-weight: 600;
+        opacity: 0.72;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+    .insta-kpi-val {
+        font-size: 1.12rem;
+        font-weight: 800;
+        line-height: 1.25;
+        margin: 2px 0 1px 0;
+    }
+    .insta-kpi-sub {
+        font-size: 0.65rem;
+        opacity: 0.65;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 3. Streamlit Built-in Metric Cards Styling (Adaptive) */
+    div[data-testid="stMetric"] {
+        background: rgba(128, 128, 128, 0.08) !important;
+        border: 1px solid rgba(128, 128, 128, 0.2) !important;
+        border-radius: 10px !important;
+        padding: 8px 12px !important;
     }
     div[data-testid="stMetric"] label {
-        font-size: 0.85rem !important;
+        font-size: 0.75rem !important;
         font-weight: 600 !important;
-        opacity: 0.85;
+        opacity: 0.8 !important;
     }
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        font-size: 1.5rem !important;
+        font-size: 1.25rem !important;
         font-weight: 800 !important;
     }
 
-    /* Tabs Styling */
+    /* 4. Tabs Styling: Sleek & Scrollable */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
+        gap: 4px;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+        padding-bottom: 2px;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
-        padding: 8px 14px;
+        padding: 6px 12px;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
-    /* 📱 Instagram-like Sleek, Compact Mobile UI */
+    /* 5. Buttons & Form Controls: Sleek & Compact */
+    .stButton > button, .stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        min-height: 38px !important;
+        font-size: 0.85rem !important;
+        padding: 4px 12px !important;
+        transition: transform .12s ease;
+    }
+    .stButton > button:active { transform: scale(0.97); }
+    div[data-baseweb="select"] > div, .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input {
+        border-radius: 10px !important;
+        font-size: 0.86rem !important;
+    }
+
+    /* 6. Active Meal Box */
+    .meal-finish-card {
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 10px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* 📱 7. Mobile Overrides: Instagram-like Compact Proportions */
     @media (max-width: 768px) {
         .block-container {
-            padding-top: 1.2rem !important;
-            padding-bottom: 2.5rem !important;
-            padding-left: 0.6rem !important;
-            padding-right: 0.6rem !important;
+            padding-top: 0.6rem !important;
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom)) !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
         }
-        /* Make columns 2-by-2 grid instead of 100% full-screen vertical blocks */
-        div[data-testid="column"] {
-            min-width: calc(50% - 6px) !important;
-            max-width: calc(50% - 6px) !important;
-            flex: 1 1 calc(50% - 6px) !important;
-            margin-bottom: 6px !important;
-            padding: 0 2px !important;
+
+        /* 3x2 Grid for Top 6 KPIs on Phone */
+        .insta-kpi-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 5px !important;
         }
-        /* Metric cards: Compact & Elegant */
-        div[data-testid="stMetric"] {
-            padding: 8px 10px !important;
-            border-radius: 10px !important;
+        .insta-kpi-grid-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 5px !important;
         }
-        div[data-testid="stMetric"] label {
-            font-size: 0.70rem !important;
-            margin-bottom: 2px !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
+        .insta-kpi-card {
+            padding: 6px 7px !important;
+            border-radius: 8px !important;
         }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-            font-size: 1.15rem !important;
-            font-weight: 800 !important;
+        .insta-kpi-title {
+            font-size: 0.62rem !important;
         }
-        div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
-            font-size: 0.65rem !important;
+        .insta-kpi-val {
+            font-size: 1.0rem !important;
         }
-        /* Mobile Typography: Instagram-like readable sizes */
+        .insta-kpi-sub {
+            font-size: 0.60rem !important;
+        }
+
+        /* Prevent Streamlit from forcing all horizontal blocks into 100% stacked giant blocks */
+        [data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+            gap: 4px !important;
+        }
+        [data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            min-width: 45% !important;
+            flex: 1 1 45% !important;
+        }
+
+        /* Compact Headings */
         h1 {
-            font-size: 1.28rem !important;
-            margin-bottom: 0.2rem !important;
+            font-size: 1.20rem !important;
+            margin-bottom: 0.15rem !important;
         }
         h2 {
-            font-size: 1.12rem !important;
-            margin-top: 0.5rem !important;
-            margin-bottom: 0.2rem !important;
+            font-size: 1.05rem !important;
+            margin-top: 0.4rem !important;
+            margin-bottom: 0.15rem !important;
         }
         h3 {
-            font-size: 0.98rem !important;
-            margin-top: 0.4rem !important;
-            margin-bottom: 0.2rem !important;
+            font-size: 0.94rem !important;
+            margin-top: 0.35rem !important;
+            margin-bottom: 0.15rem !important;
         }
         h4, h5 {
-            font-size: 0.86rem !important;
-            margin-top: 0.3rem !important;
-            margin-bottom: 0.15rem !important;
+            font-size: 0.84rem !important;
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.1rem !important;
         }
         div[data-testid="stMarkdownContainer"] p,
         div[data-testid="stMarkdownContainer"] li,
         div[data-testid="stCaptionContainer"],
         label, div[data-testid="stWidgetLabel"] p {
-            font-size: 0.84rem !important;
+            font-size: 0.80rem !important;
             line-height: 1.35 !important;
         }
-        /* Compact horizontal scrolling tabs */
+
+        /* Compact tabs */
         .stTabs [data-baseweb="tab-list"] {
-            gap: 4px !important;
+            gap: 3px !important;
             overflow-x: auto !important;
             flex-wrap: nowrap !important;
             scrollbar-width: none !important;
@@ -132,62 +230,31 @@ st.markdown("""
             display: none !important;
         }
         .stTabs [data-baseweb="tab"] {
-            padding: 6px 9px !important;
-            font-size: 0.76rem !important;
+            padding: 5px 8px !important;
+            font-size: 0.74rem !important;
             white-space: nowrap !important;
         }
-        /* Compact multiselect & form inputs */
-        div[data-baseweb="select"] {
-            font-size: 0.82rem !important;
+
+        /* Buttons & inputs on mobile */
+        .stButton > button, .stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
+            min-height: 36px !important;
+            font-size: 0.80rem !important;
+            padding: 3px 8px !important;
+            border-radius: 8px !important;
         }
-        div[data-testid="stRadio"] label {
-            padding: 2px 4px !important;
+        div[data-baseweb="select"] {
             font-size: 0.80rem !important;
         }
-        div[data-testid="stVerticalBlock"] {
-            gap: 0.5rem !important;
-        }
-        /* Compact tables & dataframes */
-        div[data-testid="stDataFrame"] {
+        div[data-testid="stRadio"] label {
+            padding: 1px 3px !important;
             font-size: 0.78rem !important;
         }
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ========================================================
-# 📲 MODERN APP SHELL: native-app look + installable (PWA) on phones
-# ========================================================
-st.markdown("""
-<style>
-    /* Hide Streamlit chrome so it feels like a real app */
-    #MainMenu, footer { visibility: hidden; }
-    header[data-testid="stHeader"] { background: transparent !important; }
-    div[data-testid="stToolbar"], div[data-testid="stDecoration"], .stDeployButton { display: none !important; }
-    .block-container { padding-top: 1.2rem !important; max-width: 1200px; }
-
-    /* Modern surfaces */
-    html, body, [class*="css"] { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
-    h1 { font-weight: 800 !important; letter-spacing: -0.02em; }
-    h2, h3 { font-weight: 700 !important; letter-spacing: -0.01em; }
-    div[data-testid="stMetric"] {
-        background: rgba(128, 128, 128, 0.08) !important;
-    }
-    .stButton > button, .stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
-        border-radius: 12px !important; font-weight: 700 !important; min-height: 44px;
-        transition: transform .12s ease, box-shadow .12s ease;
-    }
-    .stButton > button:active { transform: scale(0.97); }
-    div[data-baseweb="select"] > div, .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input {
-        border-radius: 12px !important;
-    }
-    div[data-testid="stDataFrame"], div[data-testid="stExpander"] { border-radius: 14px; overflow: hidden; }
-    div[data-testid="stExpander"] { border: 1px solid rgba(128,128,128,0.22); }
-
-    /* Phone: safe-area + thumb-friendly sizing */
-    @media (max-width: 768px) {
-        .block-container { padding-bottom: calc(2.5rem + env(safe-area-inset-bottom)) !important; }
-        .stButton > button { min-height: 46px; }
+        div[data-testid="stVerticalBlock"] {
+            gap: 0.35rem !important;
+        }
+        div[data-testid="stDataFrame"] {
+            font-size: 0.75rem !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -644,7 +711,7 @@ if search_query:
     ]
 
 # ========================================================
-# HEADER & BUDGET BANNER
+# HEADER & BUDGET BANNER (SLEEK COMPACT MOBILE-FRIENDLY)
 # ========================================================
 st.title("🛒 Bizim Market Paneli – München 🥨")
 st.caption("Kız arkadaşınızla ortak harcama, fiş arşivleme ve market fiyat kıyaslama sistemi")
@@ -652,21 +719,26 @@ st.caption("Kız arkadaşınızla ortak harcama, fiş arşivleme ve market fiyat
 oct_spend = df[df["tarih"].str.startswith("2026-10")]["toplam_fiyat"].sum()
 budget_pct = min(100.0, (oct_spend / budget_goal) * 100) if budget_goal > 0 else 0
 remaining_budget = budget_goal - oct_spend
+sep_spend = df[df["tarih"].str.startswith("2026-09")]["toplam_fiyat"].sum()
 
-col_b1, col_b2, col_b3 = st.columns([2, 1, 1])
-with col_b1:
-    st.markdown(f"**🎯 Ekim Ayı Ortak Bütçesi:** €{oct_spend:,.2f} / **€{budget_goal:,.2f}** (`%{budget_pct:.0f}` kullanıldı)")
-    st.progress(budget_pct / 100.0)
-with col_b2:
-    if remaining_budget >= 0:
-        st.markdown(f"<span style='color:#10b981; font-weight:700;'>Kalan Bütçe:</span> €{remaining_budget:,.2f}", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<span style='color:#ef4444; font-weight:700;'>Bütçe Aşıldı:</span> -€{abs(remaining_budget):,.2f}", unsafe_allow_html=True)
-with col_b3:
-    sep_spend = df[df["tarih"].str.startswith("2026-09")]["toplam_fiyat"].sum()
-    st.markdown(f"**Geçen Ay (Eylül):** €{sep_spend:,.2f}")
+budget_color = "#10b981" if remaining_budget >= 0 else "#ef4444"
+rem_status = f"Kalan: €{remaining_budget:,.2f}" if remaining_budget >= 0 else f"Bütçe Aşıldı: -€{abs(remaining_budget):,.2f}"
 
-st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+st.markdown(f"""
+<div style="background: rgba(128, 128, 128, 0.08); border: 1px solid rgba(128, 128, 128, 0.2); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem; font-weight: 600; margin-bottom: 6px;">
+        <span>🎯 <b>Ekim Bütçesi:</b> €{oct_spend:,.2f} / €{budget_goal:,.2f} <span style="opacity: 0.7; font-weight: 500;">(%{budget_pct:.0f})</span></span>
+        <span style="color: {budget_color}; font-weight: 700;">{rem_status}</span>
+    </div>
+    <div style="width: 100%; height: 7px; background: rgba(128, 128, 128, 0.2); border-radius: 4px; overflow: hidden;">
+        <div style="width: {min(budget_pct, 100)}%; height: 100%; background: {budget_color}; border-radius: 4px;"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; opacity: 0.7; margin-top: 4px;">
+        <span>Geçen Ay (Eylül): €{sep_spend:,.2f}</span>
+        <span>Hedef: €{budget_goal:,.0f}/ay</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ========================================================
 # 🏠 DOLAPTAKİ HAZIR YEMEKLERİMİZ WIDGET (BİTTİ Mİ KONTROLÜ)
@@ -676,15 +748,15 @@ active_home_meals = [m for m in all_meal_records if m.get("durum", "aktif") == "
 
 if active_home_meals:
     st.markdown("""
-    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 78, 59, 0.3)); border: 1px solid #10b981; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
-        <span style="font-weight: 700; color: #34d399; font-size: 0.92rem;">🍲 Dolapta Hazır Yemeğimiz Var! (Önce Bunları Bitirelim)</span>
+    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 6px 12px; margin-bottom: 6px;">
+        <span style="font-weight: 700; color: #10b981; font-size: 0.88rem;">🍲 Dolapta Hazır Yemeğimiz Var! (Önce Bunları Bitirelim)</span>
     </div>
     """, unsafe_allow_html=True)
     
     for hm in active_home_meals:
-        hm_c1, hm_c2 = st.columns([5, 1])
+        hm_c1, hm_c2 = st.columns([5, 1.2])
         with hm_c1:
-            st.markdown(f"**🍲 {hm.get('yemek')}** (`{hm.get('porsiyon_gun', '2 gün')}` • {hm.get('tarih')} • *{hm.get('kim_yapti', 'Birlikte')}*)")
+            st.markdown(f"**🍲 {hm.get('yemek')}** <span style='font-size:0.78rem; opacity:0.8;'>({hm.get('porsiyon_gun', '2 gün')} • {hm.get('tarih')} • {hm.get('kim_yapti', 'Birlikte')})</span>", unsafe_allow_html=True)
             if hm.get("not") and hm.get("not") != "Afiyet olsun!":
                 st.caption(f"📝 *Not: {hm.get('not')}*")
         with hm_c2:
@@ -693,10 +765,10 @@ if active_home_meals:
                 save_meal_history(all_meal_records)
                 st.success(f"'{hm.get('yemek')}' bitti olarak işaretlendi!")
                 st.rerun()
-    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
 # ========================================================
-# KPI METRICS ROW
+# KPI METRICS ROW (INSTAGRAM-STYLE COMPACT 3x2 GRID ON PHONE)
 # ========================================================
 total_spend = filtered_df["toplam_fiyat"].sum()
 total_items = len(filtered_df)
@@ -713,13 +785,40 @@ store_grp = filtered_df.groupby("market")["toplam_fiyat"].sum()
 top_store_name = store_grp.idxmax() if not store_grp.empty else "-"
 top_store_val = store_grp.max() if not store_grp.empty else 0
 
-kpi1, kpi2, kpi3, kpi4, kpi5, kpi6 = st.columns(6)
-kpi1.metric("Toplam Harcama", f"€{total_spend:,.2f}", delta=f"{total_items} ürün")
-kpi2.metric("Ortalama Fiş", f"€{avg_basket:,.2f}", delta=f"{receipt_count} fiş")
-kpi3.metric("Ekim Harcaması", f"€{oct_spend:,.2f}", delta=f"Eylül €{sep_spend:,.0f}")
-kpi4.metric("Lider Market", top_store_name, delta=f"€{top_store_val:,.1f}")
-kpi5.metric("Pfand (Depozito)", f"€{pfand_net:,.2f}", delta="Net İade/Ödeme")
-kpi6.metric("Kayıtlı Fiş", f"{receipt_count} Adet", delta="Münih Kasa")
+st.markdown(f"""
+<div class="insta-kpi-grid">
+    <div class="insta-kpi-card">
+        <div class="insta-kpi-title">Toplam Harcama</div>
+        <div class="insta-kpi-val">€{total_spend:,.2f}</div>
+        <div class="insta-kpi-sub">{total_items} ürün</div>
+    </div>
+    <div class="insta-kpi-card">
+        <div class="insta-kpi-title">Ortalama Fiş</div>
+        <div class="insta-kpi-val">€{avg_basket:,.2f}</div>
+        <div class="insta-kpi-sub">{receipt_count} fiş</div>
+    </div>
+    <div class="insta-kpi-card">
+        <div class="insta-kpi-title">Ekim Harcaması</div>
+        <div class="insta-kpi-val">€{oct_spend:,.2f}</div>
+        <div class="insta-kpi-sub">Eylül €{sep_spend:,.0f}</div>
+    </div>
+    <div class="insta-kpi-card">
+        <div class="insta-kpi-title">Lider Market</div>
+        <div class="insta-kpi-val" style="font-size: 0.95rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{top_store_name}</div>
+        <div class="insta-kpi-sub">€{top_store_val:,.1f}</div>
+    </div>
+    <div class="insta-kpi-card">
+        <div class="insta-kpi-title">Pfand (Depozito)</div>
+        <div class="insta-kpi-val">€{pfand_net:,.2f}</div>
+        <div class="insta-kpi-sub">Net İade</div>
+    </div>
+    <div class="insta-kpi-card">
+        <div class="insta-kpi-title">Kayıtlı Fiş</div>
+        <div class="insta-kpi-val">{receipt_count} Adet</div>
+        <div class="insta-kpi-sub">Münih Kasa</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
 
@@ -1290,62 +1389,101 @@ with tab_planner:
         return {"found": False}
 
     # 2. QUICK SET MENU COMBOS (HAZIR UYUMLU MENÜLER)
-    st.markdown("#### 🌟 1. Hızlı Set Menü Kombosu Seçin (veya Aşağıdan Serbest Oluşturun):")
-    
-    preset_choice = st.radio(
-        "Hazır Uyumlu Menü Şablonu:",
-        [
-            "🎨 Kendi Menümü Kendim Oluşturacağım (Serbest Seçim)",
-            "🍲 1. Geleneksel Tencere Menüsü: Mercimek Çorbası (2G) + Kuru Fasülye & Pilav (3G) + Çoban Salata (1G)",
-            "🍗 2. Restoran Usulü Özel Menü: Kaşarlı Domates Çorbası (2G) + Mantar Soslu Tavuk & Püre (2G) + Akdeniz Salatası (1G)",
-            "🍝 3. İtalyan Akşamı Menüsü: Tarhana Çorbası (2G) + Fırında Lazanya (2G) + Havuç Tarator (1G)",
-            "🥗 4. Hafif & Diyet Menüsü: Yayla Çorbası (2G) + Zeytinyağlı Kabak Yemeği (3G) + Salatalıklı Cacık (1G)",
-            "🍜 5. Pratik & Hızlı Menü: Tavuk Suyu Şehriye Çorbası (2G) + Sebzeli Noodle (2G) + Gavurdağı Salatası (1G)"
-        ],
-        index=0
+    st.markdown("#### 🌟 1. Hızlı Set Menü Seçin:")
+
+    PRESET_CONFIGS = {
+        "🍲 1. Geleneksel Tencere": {
+            "soups": ["Kırmızı Mercimek Çorbası"],
+            "mains": ["Kuru Fasülye (Pirinç Pilavlı)"],
+            "sides": ["Çoban / Gavurdağı Salatası"]
+        },
+        "🍗 2. Restoran Usulü": {
+            "soups": ["Kaşarlı Domates Çorbası"],
+            "mains": ["Mantar Soslu Tavuk & Patates Püresi"],
+            "sides": ["Akdeniz Yeşillik Salatası (Feldsalat)"]
+        },
+        "🍝 3. İtalyan Akşamı": {
+            "soups": ["Tarhana Çorbası"],
+            "mains": ["Fırında Lazanya"],
+            "sides": ["Havuç Tarator (Yoğurtlu)"]
+        },
+        "🥗 4. Hafif & Diyet": {
+            "soups": ["Yayla Çorbası (Naneli)"],
+            "mains": ["Zeytinyağlı Kabak Yemeği"],
+            "sides": ["Salatalıklı Cacık (Naneli)"]
+        },
+        "🍜 5. Pratik & Hızlı": {
+            "soups": ["Tavuk Suyu Şehriye Çorbası"],
+            "mains": ["Sebzeli & Tavuklu Noodle"],
+            "sides": ["Çoban / Gavurdağı Salatası"]
+        }
+    }
+
+    # Initialize session keys if not present
+    if "ms_soups" not in st.session_state:
+        st.session_state["ms_soups"] = ["Kırmızı Mercimek Çorbası"]
+    if "ms_mains" not in st.session_state:
+        st.session_state["ms_mains"] = ["Kuru Fasülye (Pirinç Pilavlı)"]
+    if "ms_sides" not in st.session_state:
+        st.session_state["ms_sides"] = ["Çoban / Gavurdağı Salatası"]
+
+    st.caption("Tek dokunuşla hazır menüyü yükleyin:")
+    p_cols = st.columns(6)
+    if p_cols[0].button("🍲 Geleneksel", key="btn_p1", use_container_width=True):
+        st.session_state["ms_soups"] = PRESET_CONFIGS["🍲 1. Geleneksel Tencere"]["soups"]
+        st.session_state["ms_mains"] = PRESET_CONFIGS["🍲 1. Geleneksel Tencere"]["mains"]
+        st.session_state["ms_sides"] = PRESET_CONFIGS["🍲 1. Geleneksel Tencere"]["sides"]
+        st.rerun()
+    if p_cols[1].button("🍗 Restoran", key="btn_p2", use_container_width=True):
+        st.session_state["ms_soups"] = PRESET_CONFIGS["🍗 2. Restoran Usulü"]["soups"]
+        st.session_state["ms_mains"] = PRESET_CONFIGS["🍗 2. Restoran Usulü"]["mains"]
+        st.session_state["ms_sides"] = PRESET_CONFIGS["🍗 2. Restoran Usulü"]["sides"]
+        st.rerun()
+    if p_cols[2].button("🍝 İtalyan", key="btn_p3", use_container_width=True):
+        st.session_state["ms_soups"] = PRESET_CONFIGS["🍝 3. İtalyan Akşamı"]["soups"]
+        st.session_state["ms_mains"] = PRESET_CONFIGS["🍝 3. İtalyan Akşamı"]["mains"]
+        st.session_state["ms_sides"] = PRESET_CONFIGS["🍝 3. İtalyan Akşamı"]["sides"]
+        st.rerun()
+    if p_cols[3].button("🥗 Diyet", key="btn_p4", use_container_width=True):
+        st.session_state["ms_soups"] = PRESET_CONFIGS["🥗 4. Hafif & Diyet"]["soups"]
+        st.session_state["ms_mains"] = PRESET_CONFIGS["🥗 4. Hafif & Diyet"]["mains"]
+        st.session_state["ms_sides"] = PRESET_CONFIGS["🥗 4. Hafif & Diyet"]["sides"]
+        st.rerun()
+    if p_cols[4].button("🍜 Noodle", key="btn_p5", use_container_width=True):
+        st.session_state["ms_soups"] = PRESET_CONFIGS["🍜 5. Pratik & Hızlı"]["soups"]
+        st.session_state["ms_mains"] = PRESET_CONFIGS["🍜 5. Pratik & Hızlı"]["mains"]
+        st.session_state["ms_sides"] = PRESET_CONFIGS["🍜 5. Pratik & Hızlı"]["sides"]
+        st.rerun()
+    if p_cols[5].button("✨ Temizle", key="btn_p_clr", use_container_width=True):
+        st.session_state["ms_soups"] = []
+        st.session_state["ms_mains"] = []
+        st.session_state["ms_sides"] = []
+        st.rerun()
+
+    def on_preset_dropdown_change():
+        chosen = st.session_state.get("menu_preset_dropdown", "")
+        for k, v in PRESET_CONFIGS.items():
+            if k in chosen:
+                st.session_state["ms_soups"] = v["soups"]
+                st.session_state["ms_mains"] = v["mains"]
+                st.session_state["ms_sides"] = v["sides"]
+                return
+
+    preset_dropdown_options = [
+        "🎨 Serbest Seçim (Aşağıdaki kutulardan kendiniz seçin)",
+        "🍲 1. Geleneksel Tencere Menüsü: Mercimek Çorbası (2G) + Kuru Fasülye & Pilav (3G) + Çoban Salata (1G)",
+        "🍗 2. Restoran Usulü Özel Menü: Kaşarlı Domates Çorbası (2G) + Mantar Soslu Tavuk & Püre (2G) + Akdeniz Salatası (1G)",
+        "🍝 3. İtalyan Akşamı Menüsü: Tarhana Çorbası (2G) + Fırında Lazanya (2G) + Havuç Tarator (1G)",
+        "🥗 4. Hafif & Diyet Menüsü: Yayla Çorbası (2G) + Zeytinyağlı Kabak Yemeği (3G) + Salatalıklı Cacık (1G)",
+        "🍜 5. Pratik & Hızlı Menü: Tavuk Suyu Şehriye Çorbası (2G) + Sebzeli Noodle (2G) + Gavurdağı Salatası (1G)"
+    ]
+
+    st.selectbox(
+        "Veya Detaylı Menü Şablonu Seçin:",
+        options=preset_dropdown_options,
+        key="menu_preset_dropdown",
+        on_change=on_preset_dropdown_change
     )
-
-    # Determine default selections based on preset
-    def_soups = []
-    def_mains = []
-    def_sides = []
-
-    if "1. Geleneksel Tencere" in preset_choice:
-        def_soups = ["Kırmızı Mercimek Çorbası"]
-        def_mains = ["Kuru Fasülye (Pirinç Pilavlı)"]
-        def_sides = ["Çoban / Gavurdağı Salatası"]
-    elif "2. Restoran Usulü" in preset_choice:
-        def_soups = ["Kaşarlı Domates Çorbası"]
-        def_mains = ["Mantar Soslu Tavuk & Patates Püresi"]
-        def_sides = ["Akdeniz Yeşillik Salatası (Feldsalat)"]
-    elif "3. İtalyan Akşamı" in preset_choice:
-        def_soups = ["Tarhana Çorbası"]
-        def_mains = ["Fırında Lazanya"]
-        def_sides = ["Havuç Tarator (Yoğurtlu)"]
-    elif "4. Hafif & Diyet" in preset_choice:
-        def_soups = ["Yayla Çorbası (Naneli)"]
-        def_mains = ["Zeytinyağlı Kabak Yemeği"]
-        def_sides = ["Salatalıklı Cacık (Naneli)"]
-    elif "5. Pratik & Hızlı" in preset_choice:
-        def_soups = ["Tavuk Suyu Şehriye Çorbası"]
-        def_mains = ["Sebzeli & Tavuklu Noodle"]
-        def_sides = ["Çoban / Gavurdağı Salatası"]
-    else:
-        def_soups = ["Kırmızı Mercimek Çorbası"]
-        def_mains = ["Kuru Fasülye (Pirinç Pilavlı)", "Mantar Soslu Tavuk & Patates Püresi"]
-        def_sides = ["Salatalıklı Cacık (Naneli)"]
-
-    # 🔄 SYNC PRESET TO SESSION STATE SO MULTISELECT UPDATES IMMEDIATELY ON CLICK
-    if "active_preset_tracker" not in st.session_state:
-        st.session_state["active_preset_tracker"] = preset_choice
-        st.session_state["ms_soups"] = def_soups
-        st.session_state["ms_mains"] = def_mains
-        st.session_state["ms_sides"] = def_sides
-    elif st.session_state["active_preset_tracker"] != preset_choice:
-        st.session_state["active_preset_tracker"] = preset_choice
-        st.session_state["ms_soups"] = def_soups
-        st.session_state["ms_mains"] = def_mains
-        st.session_state["ms_sides"] = def_sides
 
     st.markdown("---")
     st.markdown("#### 🍱 2. Günün & Haftanın Menü Bileşenleri:")
@@ -1445,12 +1583,31 @@ with tab_planner:
         st.markdown("### ⏳ 3. Parça Parça Gün Hesabı & 30 Günlük Aylık Bütçe Planı")
         st.caption("Seçtiğiniz yemeklerin kaçar gün gideceği ve buna göre 30 günlük aylık mutfak bütçesi simülasyonu:")
 
-        # Day Breakdown Cards
-        dc1, dc2, dc3, dc4 = st.columns(4)
-        dc1.metric("🍲 Ana Yemek Süresi", f"{main_days} Gün", f"{len(selected_mains)} Çeşit Ana Yemek")
-        dc2.metric("🥣 Çorba Süresi", f"{soup_days} Gün", f"{len(selected_soups)} Çeşit Çorba")
-        dc3.metric("🥗 Salata & Meze", f"{side_days} Gün", f"{len(selected_sides)} Çeşit Salata")
-        dc4.metric("📅 Toplam Kapsanan Gün", f"{effective_days} Gün", "30 Günlük Aylık Plandan")
+        # Day Breakdown Cards (Compact 2x2 on Mobile, 4x1 on Desktop)
+        st.markdown(f"""
+        <div class="insta-kpi-grid-4">
+            <div class="insta-kpi-card">
+                <div class="insta-kpi-title">🍲 Ana Yemek</div>
+                <div class="insta-kpi-val">{main_days} Gün</div>
+                <div class="insta-kpi-sub">{len(selected_mains)} çeşit ana yemek</div>
+            </div>
+            <div class="insta-kpi-card">
+                <div class="insta-kpi-title">🥣 Çorba Süresi</div>
+                <div class="insta-kpi-val">{soup_days} Gün</div>
+                <div class="insta-kpi-sub">{len(selected_soups)} çeşit çorba</div>
+            </div>
+            <div class="insta-kpi-card">
+                <div class="insta-kpi-title">🥗 Salata & Meze</div>
+                <div class="insta-kpi-val">{side_days} Gün</div>
+                <div class="insta-kpi-sub">{len(selected_sides)} çeşit salata</div>
+            </div>
+            <div class="insta-kpi-card">
+                <div class="insta-kpi-title">📅 Kapsanan Gün</div>
+                <div class="insta-kpi-val">{effective_days} Gün</div>
+                <div class="insta-kpi-sub">30 günlük plandan</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         # Item by Item Days Table
         breakdown_rows = []
