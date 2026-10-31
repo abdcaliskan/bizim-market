@@ -526,10 +526,11 @@ st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
 # ========================================================
 # TABS: STRUCTURED PROFESSIONAL ANALYTICS
 # ========================================================
-tab_overview, tab_stores, tab_radar, tab_gallery, tab_add = st.tabs([
+tab_overview, tab_stores, tab_radar, tab_planner, tab_gallery, tab_add = st.tabs([
     "📊 Genel Bakış & Trendler",
     "🏪 Market & Kategori Dağılımı",
     "🥩 Akıllı Fiyat Radarı (Kıyaslama)",
+    "🍽️ Haftalık Menü & Bütçe Planı",
     "🖼️ Orijinal Fiş Galerisi",
     "📸 Fiş Yükle / Yeni Alışveriş Ekle"
 ])
@@ -774,7 +775,223 @@ with tab_radar:
         st.info("Bu ürün için henüz kayıt bulunamadı.")
 
 # --------------------------------------------------------
-# TAB 4: ORİJİNAL FİŞ GALERİSİ
+# TAB 4: HAFTALIK MENÜ & BÜTÇE KORUYUCU PLANLAYICI
+# --------------------------------------------------------
+with tab_planner:
+    st.subheader("🍽️ Akıllı Yemek Menüsü & Bütçe Koruyucu Alışveriş Planı")
+    st.caption("Birlikte yapacağınız yemekleri seçin; sistem ortak malzemeleri birleştirip en ucuz market listesini ve market günlerini çıkarsın.")
+
+    # Recipe Database with Munich Receipt Benchmark Prices
+    RECIPES_DATABASE = {
+        "Kuru fasülye": {
+            "days": 3, "type": "3 Günlük", "fresh_priority": 3,
+            "ingredients": [
+                {"name": "Kuru Fasulye (500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                {"name": "Sıvı Yağ & Baharat", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+            ]
+        },
+        "Bezelye pilavı": {
+            "days": 3, "type": "3 Günlük", "fresh_priority": 3,
+            "ingredients": [
+                {"name": "Dondurulmuş / Konserve Bezelye", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.19},
+                {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                {"name": "Havuç", "qty": 0.25, "unit": "kg", "market": "PENNY", "cost": 0.45},
+                {"name": "Tereyağı (Kerrygold / Penny)", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.50}
+            ]
+        },
+        "Kabak yemeği": {
+            "days": 3, "type": "3 Günlük", "fresh_priority": 1,
+            "ingredients": [
+                {"name": "Kabak (Zucchini)", "qty": 1.0, "unit": "kg (~3-4 adet)", "market": "PENNY", "cost": 1.49},
+                {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                {"name": "Pirinç (2 kaşık)", "qty": 0.1, "unit": "paket", "market": "Kiler", "cost": 0.20}
+            ]
+        },
+        "Tavuk pilav": {
+            "days": 3, "type": "3 Günlük", "fresh_priority": 1,
+            "ingredients": [
+                {"name": "Tavuk Göğüs Fileto (600g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 4.50},
+                {"name": "Pirinç (Baldo/Jasmin 500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.29},
+                {"name": "Tereyağı & Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.50}
+            ]
+        },
+        "Patates yemeği": {
+            "days": 3, "type": "3 Günlük", "fresh_priority": 3,
+            "ingredients": [
+                {"name": "Patates (1.2 kg)", "qty": 1.2, "unit": "kg", "market": "PENNY", "cost": 1.40},
+                {"name": "Kuru Soğan", "qty": 0.3, "unit": "kg", "market": "PENNY", "cost": 0.60},
+                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                {"name": "Sıvı Yağ & Biber", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+            ]
+        },
+        "Kıymalı makarna": {
+            "days": 2, "type": "2 Günlük", "fresh_priority": 1,
+            "ingredients": [
+                {"name": "Dana Kıyma (400-500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 5.49},
+                {"name": "Makarna (Penne/Fusilli 500g)", "qty": 1, "unit": "paket", "market": "PENNY/HIT", "cost": 0.99},
+                {"name": "Domates Püresi (Passata)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                {"name": "Kuru Soğan & Sarımsak", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40}
+            ]
+        },
+        "Mantar soslu tavuk ve patates püresi": {
+            "days": 2, "type": "2 Günlük", "fresh_priority": 1,
+            "ingredients": [
+                {"name": "Tavuk Göğüs Fileto (500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 3.80},
+                {"name": "Kültür Mantarı (300-400g)", "qty": 1, "unit": "paket", "market": "HIT/PENNY", "cost": 2.19},
+                {"name": "Krema (H-Sahne 200ml)", "qty": 1, "unit": "kutu", "market": "PENNY", "cost": 0.69},
+                {"name": "Patates (1 kg püre için)", "qty": 1.0, "unit": "kg", "market": "PENNY", "cost": 1.20},
+                {"name": "Süt & Tereyağı", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 0.80}
+            ]
+        },
+        "Mercimek çorbası": {
+            "days": 2, "type": "2 Günlük", "fresh_priority": 3,
+            "ingredients": [
+                {"name": "Kırmızı Mercimek (300g)", "qty": 0.6, "unit": "paket (500g)", "market": "PENNY", "cost": 0.85},
+                {"name": "Kuru Soğan", "qty": 0.2, "unit": "kg", "market": "PENNY", "cost": 0.40},
+                {"name": "Havuç (1 adet)", "qty": 0.15, "unit": "kg", "market": "PENNY", "cost": 0.25},
+                {"name": "Patates (1 adet)", "qty": 0.15, "unit": "kg", "market": "PENNY", "cost": 0.20},
+                {"name": "Tereyağı & Nane", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.30}
+            ]
+        },
+        "Tarhana çorbası": {
+            "days": 2, "type": "2 Günlük", "fresh_priority": 4,
+            "ingredients": [
+                {"name": "Tarhana (Kiler/Evden)", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.00},
+                {"name": "Tereyağı & Salça", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+            ]
+        },
+        "Lazanya": {
+            "days": 2, "type": "2 Günlük", "fresh_priority": 2,
+            "ingredients": [
+                {"name": "Dana Kıyma (400-500g)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 5.49},
+                {"name": "Lazanya Yaprakları", "qty": 1, "unit": "paket", "market": "PENNY/EDEKA", "cost": 1.49},
+                {"name": "Domates Püresi (Passata - 2 kutu)", "qty": 2, "unit": "kutu", "market": "PENNY", "cost": 1.38},
+                {"name": "Rendelenmiş Peynir (Emmental/Gouda)", "qty": 1, "unit": "paket", "market": "PENNY", "cost": 1.79},
+                {"name": "Süt, Un & Tereyağı (Beşamel)", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 1.20}
+            ]
+        },
+        "Noodle": {
+            "days": 2, "type": "2 Günlük", "fresh_priority": 2,
+            "ingredients": [
+                {"name": "Noodle (2-3 paket)", "qty": 2, "unit": "paket", "market": "PENNY/HIT", "cost": 1.98},
+                {"name": "Garnitür Sebze (Havuç, Biber, Kabak)", "qty": 1, "unit": "porsiyon", "market": "PENNY", "cost": 1.20},
+                {"name": "Soya Sosu / Sıvı Yağ", "qty": 1, "unit": "porsiyon", "market": "Kiler", "cost": 0.40}
+            ]
+        }
+    }
+
+    # Layout: Selection & Strategy
+    pl_col1, pl_col2 = st.columns([1, 1])
+
+    with pl_col1:
+        st.markdown("#### 🥘 1. Bu Dönem Yapılacak Yemekleri Seçin:")
+        
+        st.markdown("**Üç Günlük Yemekler:**")
+        sel_3days = []
+        for m_name in ["Kuru fasülye", "Bezelye pilavı", "Kabak yemeği", "Tavuk pilav", "Patates yemeği"]:
+            if st.checkbox(f"🍲 {m_name} (3 Günlük)", value=(m_name in ["Kuru fasülye", "Tavuk pilav"]), key=f"chk_{m_name}"):
+                sel_3days.append(m_name)
+
+        st.markdown("**İki Günlük Yemekler:**")
+        sel_2days = []
+        for m_name in ["Kıymalı makarna", "Mantar soslu tavuk ve patates püresi", "Mercimek çorbası", "Tarhana çorbası", "Lazanya", "Noodle"]:
+            if st.checkbox(f"🍝 {m_name} (2 Günlük)", value=(m_name in ["Kıymalı makarna", "Mercimek çorbası"]), key=f"chk_{m_name}"):
+                sel_2days.append(m_name)
+
+        selected_meals = sel_3days + sel_2days
+        total_days = sum([RECIPES_DATABASE[m]["days"] for m in selected_meals])
+
+    with pl_col2:
+        st.markdown("#### 📅 2. Bütçe Koruma & Market Günleri Stratejisi")
+        st.markdown("""
+        > 💡 **Münih Bütçe Kuralı:** Markete haftada **en fazla 2 kez** gidilmeli! Her ekstra market ziyareti sepete ortalama **€5 - €10** atıştırmalık/abur cubur sızdırır. Pazar günleri ise Münih'te her yer kapalıdır.
+        """)
+
+        st.info("""
+        🛒 **Tavsiye Edilen 2 Market Günü:**
+        * **1. Gün - PAZARTESİ (Ana Alışveriş):** Hafta başı taze sebzeler (kabak, mantar), taze et/tavuk ve kiler eksikleri (patates, soğan, pirinç, passata).
+        * **2. Gün - PERŞEMBE (Hafta Sonu Takviyesi):** Hafta sonu menüsü, kıyma, lazanya yaprağı ve taze eksikler (Cuma/Cumartesi kalabalığından önce sakin alışveriş).
+        """)
+
+        # Cooking Freshness Order
+        st.markdown("##### ⏳ Bozulma Önleme & Pişirme Sırası:")
+        st.caption("Malzemeler israf olmasın diye taze olanları önce, bakliyat & patatesi sonra pişirin:")
+        st.markdown("""
+        1. **1. ve 2. Gün:** Mantarlı & Tavuklu yemekler, taze kabak (Çabuk bozulur)
+        2. **3. ve 4. Gün:** Kıyma (kıymalı makarna veya lazanya)
+        3. **5. - 7. Gün:** Kuru fasulye, patates yemeği, bezelye pilavı, mercimek çorbası (Kilerde uzun süre bozulmaz)
+        """)
+
+    st.markdown("---")
+
+    # Aggregation & Consolidated Shopping List
+    if selected_meals:
+        tot_meal_cost = 0.0
+        ing_dict = {}
+
+        for m_name in selected_meals:
+            m_data = RECIPES_DATABASE[m_name]
+            for ing in m_data["ingredients"]:
+                i_name = ing["name"]
+                if i_name not in ing_dict:
+                    ing_dict[i_name] = {
+                        "name": i_name,
+                        "qty": ing["qty"],
+                        "unit": ing["unit"],
+                        "market": ing["market"],
+                        "cost": ing["cost"],
+                        "meals": [m_name]
+                    }
+                else:
+                    ing_dict[i_name]["qty"] += ing["qty"]
+                    ing_dict[i_name]["cost"] += ing["cost"]
+                    ing_dict[i_name]["meals"].append(m_name)
+                tot_meal_cost += ing["cost"]
+
+        # Summary KPIs
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Toplam Planlanan Gün", f"{total_days} Gün", f"{len(selected_meals)} Çeşit Yemek")
+        k2.metric("Tahmini Market Tutarı", f"€{tot_meal_cost:,.2f}", "Fiş Reel Fiyatları")
+        per_day = tot_meal_cost / total_days if total_days > 0 else 0
+        k3.metric("Günlük Yemek Maliyeti", f"€{per_day:,.2f}", "2 Kişi Toplam")
+        k4.metric("Kişi Başı Öğün Başı", f"€{(per_day/2):,.2f}", "Süper Ekonomik! 🎯")
+
+        st.markdown("### 🛒 Birleştirilmiş Akıllı Alışveriş Listesi")
+        st.caption("Aynı malzemeleri tekrar almamak için tüm yemeklerin ihtiyaçları birleştirilmiştir:")
+
+        list_rows = []
+        for i_name, info in ing_dict.items():
+            list_rows.append({
+                "Malzeme": info["name"],
+                "Miktar / Birim": f"{info['qty']:.1f} {info['unit']}" if isinstance(info['qty'], float) and info['qty'] % 1 != 0 else f"{int(info['qty'])} {info['unit']}",
+                "Önerilen Market": info["market"],
+                "Tahmini Tutar": f"€{info['cost']:.2f}",
+                "Kullanılacağı Yemekler": ", ".join(info["meals"])
+            })
+
+        shop_df = pd.DataFrame(list_rows)
+        st.dataframe(shop_df, use_container_width=True)
+
+        # WhatsApp Friendly Copy Block
+        wa_text = f"*💑 BİZİM MARKET ALIŞVERİŞ LİSTESİ ({total_days} GÜNLÜK)*\n"
+        wa_text += f"*Seçilen Yemekler:* {', '.join(selected_meals)}\n"
+        wa_text += f"*Tahmini Toplam:* €{tot_meal_cost:,.2f}\n\n"
+        wa_text += "*🛒 Alınacaklar:*\n"
+        for row in list_rows:
+            wa_text += f"- [ ] {row['Malzeme']} ({row['Miktar / Birim']}) -> {row['Önerilen Market']} (~{row['Tahmini Tutar']})\n"
+        wa_text += "\n📍 Not: Markete tok karnına gidilsin, ekstra abur cubur alınmasın! 😊"
+
+        with st.expander("📲 Sevgiline WhatsApp'tan Göndermek İçin Listeyi Kopyala"):
+            st.code(wa_text, language="text")
+
+    else:
+        st.warning("Lütfen yukarıdan en az bir yemek seçin.")
+
+# --------------------------------------------------------
+# TAB 5: ORİJİNAL FİŞ GALERİSİ
 # --------------------------------------------------------
 with tab_gallery:
     st.subheader("🖼️ Münih Kasa Fişleri Fotoğraf Galerisi")
