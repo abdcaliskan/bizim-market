@@ -63,10 +63,24 @@ st.markdown("""
 # File Paths
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "market_data.json")
 CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "market_data.csv")
+MEAL_HISTORY_PATH = os.path.join(os.path.dirname(__file__), "data", "meal_history.json")
 RECEIPTS_DIR = os.path.join(os.path.dirname(__file__), "public", "receipts")
 
 os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
 os.makedirs(RECEIPTS_DIR, exist_ok=True)
+
+def load_meal_history():
+    if os.path.exists(MEAL_HISTORY_PATH):
+        try:
+            with open(MEAL_HISTORY_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+def save_meal_history(history_list):
+    with open(MEAL_HISTORY_PATH, "w", encoding="utf-8") as f:
+        json.dump(history_list, f, ensure_ascii=False, indent=2)
 
 # Brand Color Map
 MARKET_COLORS = {
@@ -1337,11 +1351,87 @@ with tab_planner:
         with st.expander("📲 Sevgiline WhatsApp'tan Göndermek İçin Menü & Listeyi Kopyala", expanded=True):
             st.code(wa_text, language="text")
 
-    else:
-        st.warning("Lütfen yukarıdan en az bir çorba, ana yemek veya salata seçin.")
+    # ----------------------------------------------------
+    # 5. GERÇEKTEN BU YEMEĞİ YAPTIK & GEÇMİŞ NOTLARI
+    # ----------------------------------------------------
+    st.markdown("---")
+    st.markdown("### 🍳 5. 'Bu Yemeği Yaptık & Bitti' Günlüğü")
+    st.caption("Planladığınız veya evde yaptığınız yemekleri 'pişirildi / bitti' olarak işaretleyip kimin yaptığı, kaç gün sürdüğü ve lezzet notlarınızı kaydedebilirsiniz.")
 
-# --------------------------------------------------------
-# TAB 5: ORİJİNAL FİŞ GALERİSİ
+    meal_history = load_meal_history()
+
+    # Form to add new cooked meal
+    with st.expander("➕ Yeni Pişirilen Yemeği Kaydet", expanded=(len(meal_history) == 0)):
+        with st.form("form_cooked_meal", clear_on_submit=True):
+            f_col1, f_col2, f_col3 = st.columns(3)
+            with f_col1:
+                # Suggest from active selected dishes first, then all dishes
+                cook_dish_options = all_selected_dishes.copy() if 'all_selected_dishes' in locals() and all_selected_dishes else []
+                all_available_dishes = list(COURSE_DATABASE["mains"].keys()) + list(COURSE_DATABASE["soups"].keys()) + list(COURSE_DATABASE["sides"].keys())
+                for d in all_available_dishes:
+                    if d not in cook_dish_options:
+                        cook_dish_options.append(d)
+                cook_dish_options.append("Diğer (Özel Tarif)")
+
+                c_dish = st.selectbox("🍳 Pişirilen Yemek:", cook_dish_options)
+                c_custom_dish = st.text_input("Özel Yemek Adı (Eğer Diğer seçtiyseniz):") if c_dish == "Diğer (Özel Tarif)" else ""
+
+            with f_col2:
+                c_date = st.date_input("📅 Pişirme / Tüketim Tarihi:", datetime.now())
+                c_chef = st.selectbox("👩‍🍳 Kim Pişirdi?:", ["Birlikte 💑", "Ben 👨‍🍳", "Kız Arkadaşım 👩‍🍳"])
+
+            with f_col3:
+                c_duration = st.selectbox("⏳ Kaç Gün Yetti / Sürdü?:", ["1 gün", "2 gün", "3 gün", "4 gün", "5+ gün"], index=1)
+                c_rating = st.selectbox("⭐ Lezzet / Memnuniyet:", ["⭐⭐⭐⭐⭐ (Efsane oldu!)", "⭐⭐⭐⭐ (Çok lezzetli)", "⭐⭐⭐ (İyiydi)", "⭐⭐ (Geliştirilmeli)"], index=0)
+
+            c_notes = st.text_area("📝 Notlar & Hatırlatmalar:", placeholder="Örn: Tuzu ve baharatı tam kıvamındaydı, 3 gün rahat yettik. Bir dahakine yanına cacık da yapalım.")
+
+            submit_cooked = st.form_submit_button("💾 Yemeği Geçmişe Kaydet & Arşivle", type="primary", use_container_width=True)
+            if submit_cooked:
+                final_dish_name = c_custom_dish.strip() if (c_dish == "Diğer (Özel Tarif)" and c_custom_dish.strip()) else c_dish
+                new_entry = {
+                    "id": int(datetime.now().timestamp()),
+                    "tarih": str(c_date),
+                    "yemek": final_dish_name,
+                    "kim_yapti": c_chef,
+                    "porsiyon_gun": c_duration,
+                    "puan": c_rating.split(" ")[0],
+                    "not": c_notes.strip() if c_notes else "Afiyet olsun!"
+                }
+                meal_history.insert(0, new_entry)
+                save_meal_history(meal_history)
+                st.success(f"🎉 Harika! '{final_dish_name}' yemeği başarıyla geçmiş günlüğüne kaydedildi!")
+                st.rerun()
+
+    # Display History
+    if meal_history:
+        st.markdown("##### 📖 Geçmişte Pişirilen Yemekler:")
+
+        # Summary stats
+        h_col1, h_col2, h_col3 = st.columns(3)
+        h_col1.metric("Toplam Pişirilen Yemek", f"{len(meal_history)} Defa", "Ev Yemeği Keyfi 🍲")
+        
+        birlikte_count = sum(1 for m in meal_history if "Birlikte" in m.get("kim_yapti", ""))
+        ben_count = sum(1 for m in meal_history if "Ben" in m.get("kim_yapti", ""))
+        kiz_count = sum(1 for m in meal_history if "Kız" in m.get("kim_yapti", ""))
+        
+        h_col2.metric("Şef Dağılımı", f"💑 {birlikte_count} | 👨‍🍳 {ben_count} | 👩‍🍳 {kiz_count}", "Tatlı Mutfak Ortaklığı")
+        
+        # Most cooked dish
+        dish_counts = {}
+        for m in meal_history:
+            y = m.get("yemek", "")
+            dish_counts[y] = dish_counts.get(y, 0) + 1
+        fav_dish = max(dish_counts, key=dish_counts.get) if dish_counts else "-"
+        h_col3.metric("En Çok Yapılan", fav_dish, f"{dish_counts.get(fav_dish, 0)} kez pişirildi")
+
+        # History Dataframe
+        history_df = pd.DataFrame(meal_history)
+        display_hist = history_df[["tarih", "yemek", "kim_yapti", "porsiyon_gun", "puan", "not"]].copy()
+        display_hist.columns = ["Tarih", "Yemek Adı", "Kimin Eline Sağlık?", "Kaç Gün Gitti?", "Puan", "Notlar"]
+        st.dataframe(display_hist, use_container_width=True)
+    else:
+        st.info("Henüz geçmişe kaydedilmiş yemek bulunmuyor. Yaptığınız yemekleri yukarıdaki butondan kaydedebilirsiniz!")
 
 # --------------------------------------------------------
 # TAB 5: ORİJİNAL FİŞ GALERİSİ

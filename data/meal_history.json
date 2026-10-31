@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "tarih": "2026-10-28",
+    "yemek": "Zeytinyağlı Kabak Yemeği",
+    "kategori": "Ana Yemek",
+    "porsiyon_gun": "3 gün",
+    "kim_yapti": "Birlikte 💑",
+    "puan": "⭐⭐⭐⭐⭐",
+    "not": "PENNY yoğurdu ile servis ettik, hafif ve çok lezzetli oldu."
+  },
+  {
+    "id": 2,
+    "tarih": "2026-10-25",
+    "yemek": "Kıymalı Makarna (Bolonez)",
+    "kategori": "Ana Yemek",
+    "porsiyon_gun": "2 gün",
+    "kim_yapti": "Ben 👨‍🍳",
+    "puan": "⭐⭐⭐⭐⭐",
+    "not": "PENNY dana kıyma ve Passata kullandık, çok doyurucuydu."
+  }
+]
