@@ -114,8 +114,11 @@ st.markdown("""
             margin-top: 0.3rem !important;
             margin-bottom: 0.15rem !important;
         }
-        p, span, label, div {
-            font-size: 0.82rem !important;
+        div[data-testid="stMarkdownContainer"] p,
+        div[data-testid="stMarkdownContainer"] li,
+        div[data-testid="stCaptionContainer"],
+        label, div[data-testid="stWidgetLabel"] p {
+            font-size: 0.84rem !important;
             line-height: 1.35 !important;
         }
         /* Compact horizontal scrolling tabs */
@@ -168,8 +171,7 @@ st.markdown("""
     h1 { font-weight: 800 !important; letter-spacing: -0.02em; }
     h2, h3 { font-weight: 700 !important; letter-spacing: -0.01em; }
     div[data-testid="stMetric"] {
-        background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)) !important;
-        backdrop-filter: blur(6px);
+        background: rgba(128, 128, 128, 0.08) !important;
     }
     .stButton > button, .stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
         border-radius: 12px !important; font-weight: 700 !important; min-height: 44px;
@@ -206,11 +208,10 @@ components.html("""
     };
     add('link', { rel: 'manifest', href: '/app/static/manifest.json' });
     add('link', { rel: 'apple-touch-icon', href: '/app/static/apple-touch-icon.png' });
-    add('meta', { name: 'theme-color', content: '#0b1220' });
     add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
     add('meta', { name: 'mobile-web-app-capable', content: 'yes' });
     add('meta', { name: 'apple-mobile-web-app-title', content: 'Bizim Market' });
-    add('meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' });
+    add('meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'default' });
     d.title = 'Bizim Market';
   } catch (e) {}
 })();
