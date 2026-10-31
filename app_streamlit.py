@@ -152,6 +152,71 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ========================================================
+# 📲 MODERN APP SHELL: native-app look + installable (PWA) on phones
+# ========================================================
+st.markdown("""
+<style>
+    /* Hide Streamlit chrome so it feels like a real app */
+    #MainMenu, footer { visibility: hidden; }
+    header[data-testid="stHeader"] { background: transparent !important; }
+    div[data-testid="stToolbar"], div[data-testid="stDecoration"], .stDeployButton { display: none !important; }
+    .block-container { padding-top: 1.2rem !important; max-width: 1200px; }
+
+    /* Modern surfaces */
+    html, body, [class*="css"] { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
+    h1 { font-weight: 800 !important; letter-spacing: -0.02em; }
+    h2, h3 { font-weight: 700 !important; letter-spacing: -0.01em; }
+    div[data-testid="stMetric"] {
+        background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)) !important;
+        backdrop-filter: blur(6px);
+    }
+    .stButton > button, .stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
+        border-radius: 12px !important; font-weight: 700 !important; min-height: 44px;
+        transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .stButton > button:active { transform: scale(0.97); }
+    div[data-baseweb="select"] > div, .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input {
+        border-radius: 12px !important;
+    }
+    div[data-testid="stDataFrame"], div[data-testid="stExpander"] { border-radius: 14px; overflow: hidden; }
+    div[data-testid="stExpander"] { border: 1px solid rgba(128,128,128,0.22); }
+
+    /* Phone: safe-area + thumb-friendly sizing */
+    @media (max-width: 768px) {
+        .block-container { padding-bottom: calc(2.5rem + env(safe-area-inset-bottom)) !important; }
+        .stButton > button { min-height: 46px; }
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Inject manifest / theme-color / iOS home-screen tags into the real <head>
+components.html("""
+<script>
+(function () {
+  try {
+    const d = window.parent.document;
+    const add = (tag, attrs) => {
+      const key = Object.entries(attrs).map(([k, v]) => k + '=' + v).join('|');
+      if (d.head.querySelector('[data-bm="' + key + '"]')) return;
+      const el = d.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+      el.setAttribute('data-bm', key);
+      d.head.appendChild(el);
+    };
+    add('link', { rel: 'manifest', href: '/app/static/manifest.json' });
+    add('link', { rel: 'apple-touch-icon', href: '/app/static/apple-touch-icon.png' });
+    add('meta', { name: 'theme-color', content: '#0b1220' });
+    add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
+    add('meta', { name: 'mobile-web-app-capable', content: 'yes' });
+    add('meta', { name: 'apple-mobile-web-app-title', content: 'Bizim Market' });
+    add('meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' });
+    d.title = 'Bizim Market';
+  } catch (e) {}
+})();
+</script>
+""", height=0)
+
 # File Paths
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "market_data.json")
 CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "market_data.csv")
